@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand colors */
+  --color-cream: #fbf6ec;
+  --color-cream-dark: #f3ead8;
+  --color-gold: #c8963e;
+  --color-gold-light: #e2b961;
+  --color-gold-dark: #a37722;
+  --color-forest: #1f3d2b;
+  --color-forest-light: #2d5a3f;
+  --color-ink: #2a2118;
+
+  /* Fonts */
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream font-sans text-ink antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+
+  /* Offset anchor jumps so the sticky navbar doesn't cover section titles */
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
+}
