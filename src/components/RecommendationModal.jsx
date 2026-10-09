@@ -141,8 +141,15 @@ export default function RecommendationModal({ open, onClose }) {
     }
   }
 
+  /// Facebook / Messenger / Instagram open links in an in-app browser
+  // that usually can't save or share files
+  const inAppBrowser =
+    typeof navigator !== 'undefined' &&
+    /FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram/i.test(navigator.userAgent)
+
   // Phones can share the image straight to Messenger
   const canShare =
+    !inAppBrowser &&
     typeof navigator !== 'undefined' &&
     typeof navigator.share === 'function' &&
     typeof navigator.canShare === 'function'
@@ -213,8 +220,9 @@ export default function RecommendationModal({ open, onClose }) {
               <div className="text-center">
                 <h3 className="text-3xl font-semibold text-berry">Your order image is ready!</h3>
                 <p className="mt-2 text-sm leading-relaxed text-cocoa/70">
-                  You can send this screenshot to us on Messenger. Save it first, then attach it
-                  in the chat.
+                  {inAppBrowser
+                    ? 'Take a screenshot of this screen, or press and hold the image to save it. Then send it to us on Messenger.'
+                    : 'You can send this screenshot to us on Messenger. Save it first, then attach it in the chat.'}
                 </p>
               </div>
 
@@ -225,8 +233,11 @@ export default function RecommendationModal({ open, onClose }) {
               />
 
               <p className="text-center text-xs leading-relaxed text-cocoa/55">
-                On iPhone, press and hold the image to save it. In Messenger, please also tell us
-                your name, the date and time you need it, and pickup or delivery details.
+                {inAppBrowser
+                  ? 'Tip: for the easiest saving, tap the ⋯ menu in Facebook and choose "Open in browser". '
+                  : 'On iPhone, press and hold the image to save it. '}
+                In Messenger, please also tell us your name, the date and time you need it, and
+                pickup or delivery details.
               </p>
             </div>
           ) : (
@@ -251,9 +262,8 @@ export default function RecommendationModal({ open, onClose }) {
                 min={0}
                 max={n}
                 onChange={setKids}
-                unit={`${kidsCount === 1 ? 'kid' : 'kids'} · ${n - kidsCount} ${
-                  n - kidsCount === 1 ? 'adult' : 'adults'
-                }`}
+                unit={`${kidsCount === 1 ? 'kid' : 'kids'} · ${n - kidsCount} ${n - kidsCount === 1 ? 'adult' : 'adults'
+                  }`}
               />
 
               {/* Budget */}
@@ -322,11 +332,10 @@ export default function RecommendationModal({ open, onClose }) {
                         <button
                           key={spread.id}
                           onClick={() => setPick(i)}
-                          className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
-                            i === activeIndex
-                              ? 'border-berry bg-berry text-white'
-                              : 'border-cream-dark bg-white text-cocoa/70 hover:border-berry hover:text-berry'
-                          }`}
+                          className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${i === activeIndex
+                            ? 'border-berry bg-berry text-white'
+                            : 'border-cream-dark bg-white text-cocoa/70 hover:border-berry hover:text-berry'
+                            }`}
                         >
                           {spread.label}
                         </button>
@@ -380,25 +389,28 @@ export default function RecommendationModal({ open, onClose }) {
           <div className="border-t border-cream-dark bg-white px-6 py-5">
             {orderImage ? (
               <div className="space-y-3">
-                <div className={`grid gap-3 ${canShare ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                  <a
-                    href={orderImage}
-                    download="madonna-delicacies-order.png"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
-                  >
-                    <Download size={17} />
-                    Save image
-                  </a>
-                  {canShare && (
-                    <button
-                      onClick={shareImage}
+                {/* Save / Share only work outside Facebook's in-app browser */}
+                {!inAppBrowser && (
+                  <div className={`grid gap-3 ${canShare ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    <a
+                      href={orderImage}
+                      download="madonna-delicacies-order.png"
                       className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
                     >
-                      <Share2 size={17} />
-                      Share
-                    </button>
-                  )}
-                </div>
+                      <Download size={17} />
+                      Save image
+                    </a>
+                    {canShare && (
+                      <button
+                        onClick={shareImage}
+                        className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
+                      >
+                        <Share2 size={17} />
+                        Share
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 <OrderButtons fullWidth size="lg" label="Open Messenger to send it" />
 
