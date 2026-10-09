@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Menu, X, Phone, Sparkles } from 'lucide-react'
+import { Menu, X, MessageCircle, Sparkles } from 'lucide-react'
 import logo from '../assets/images/logo.png'
 import { siteConfig } from '../data/siteConfig'
 
@@ -37,11 +37,13 @@ export default function Navbar({ onHelpClick }) {
             Help Me Choose
           </button>
           <a
-            href={siteConfig.phoneHref}
-            className="inline-flex items-center gap-2 rounded-full bg-berry px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-berry-dark"
+            href={siteConfig.messengerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-berry px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-berry/20 transition-colors hover:bg-berry-dark"
           >
-            <Phone size={16} />
-            Call to Order
+            <MessageCircle size={16} />
+            Order on Messenger
           </a>
         </div>
 
@@ -79,11 +81,13 @@ export default function Navbar({ onHelpClick }) {
             Help Me Choose
           </button>
           <a
-            href={siteConfig.phoneHref}
-            className="mt-2 flex items-center justify-center gap-2 rounded-full bg-berry py-3 font-medium text-white"
+            href={siteConfig.messengerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 flex items-center justify-center gap-2 rounded-full bg-berry py-3 font-medium text-white shadow-md shadow-berry/20"
           >
-            <Phone size={18} />
-            Call to Order
+            <MessageCircle size={18} />
+            Order on Messenger
           </a>
         </div>
       )}

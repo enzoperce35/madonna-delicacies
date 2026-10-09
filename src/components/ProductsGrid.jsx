@@ -16,7 +16,7 @@ export default function ProductsGrid({ onHelpClick }) {
           Nine reasons to celebrate
         </h2>
         <p className="mt-4 text-base leading-relaxed text-cocoa/70">
-          Choose your favorites, then call or message us to place your order.
+          Choose your favorites, then message us on Messenger to place your order.
           Every bilao is freshly prepared for your occasion.
         </p>
       </div>

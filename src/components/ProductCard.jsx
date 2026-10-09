@@ -61,7 +61,7 @@ export default function ProductCard({ product }) {
 
         {/* Order buttons pinned to the bottom so all cards align */}
         <div className="mt-auto pt-5">
-          <OrderButtons compact />
+          <OrderButtons size="sm" fullWidth />
         </div>
       </div>
     </article>

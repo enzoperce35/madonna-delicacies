@@ -31,7 +31,12 @@ export default function Hero({ onHelpClick }) {
             bilao bring generous flavor and a festive feel to every table.
           </p>
 
-          <OrderButtons size="lg" className="mt-8" />
+          <div className="mt-8">
+            <OrderButtons size="lg" />
+            <p className="mt-3 text-sm text-cocoa/60">
+              We take orders through Messenger so every detail is in writing.
+            </p>
+          </div>
 
           <button
             onClick={onHelpClick}
