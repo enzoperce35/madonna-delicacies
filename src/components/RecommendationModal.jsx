@@ -1,18 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { toPng } from 'html-to-image'
-import {
-  X,
-  Minus,
-  Plus,
-  Sparkles,
-  Image as ImageIcon,
-  Download,
-  Share2,
-  Loader2,
-  ArrowLeft,
-} from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Camera, Check, Heart, Minus, Plus, Sparkles, UtensilsCrossed, X } from 'lucide-react'
 import OrderButtons from './OrderButtons'
-import OrderImageCard from './OrderImageCard'
+import logo from '../assets/images/logo.png'
 import { recommendByBudget } from '../utils/recommend'
 
 const peso = (amount) => `₱${amount.toLocaleString('en-PH')}`
@@ -86,10 +75,8 @@ export default function RecommendationModal({ open, onClose }) {
   const [budget, setBudget] = useState(1000)
   const [pick, setPick] = useState(0)
 
-  const [orderImage, setOrderImage] = useState(null) // data URL of the finished image
-  const [making, setMaking] = useState(false)
-  const [error, setError] = useState('')
-  const cardRef = useRef(null)
+  const [phase, setPhase] = useState('plan') // 'plan' → 'slip' (screenshot screen) → 'next' (Great Choices!)
+  const [origin, setOrigin] = useState({ x: 0, y: 0 }) // where the full-screen view grows from
 
   const n = guests
   const kidsCount = Math.min(kids, n) // can never be more than the guests
@@ -105,70 +92,51 @@ export default function RecommendationModal({ open, onClose }) {
     setPick(0)
   }, [n, kidsCount, b])
 
-  // Any change to the order makes the old image out of date
+  // Any change to the order goes back to the planner
   useEffect(() => {
-    setOrderImage(null)
-    setError('')
+    setPhase('plan')
   }, [n, kidsCount, b, pick])
 
   // Start fresh when the modal closes
   useEffect(() => {
-    if (!open) setOrderImage(null)
+    if (!open) setPhase('plan')
   }, [open])
 
   const spreads = result?.spreads
   const activeIndex = spreads ? Math.min(pick, spreads.length - 1) : 0
   const active = spreads ? spreads[activeIndex] : null
 
-  // Turn the hidden order card into a PNG
-  const makeImage = async () => {
-    if (!cardRef.current) return
-    setMaking(true)
-    setError('')
-    try {
-      await document.fonts.ready
-      const dataUrl = await toPng(cardRef.current, {
-        pixelRatio: 2,
-        cacheBust: true,
-        backgroundColor: '#fff9f0',
-      })
-      setOrderImage(dataUrl)
-    } catch {
-      setError("Sorry, we couldn't create the image. Please take a screenshot of this screen instead.")
-    } finally {
-      setMaking(false)
-    }
+  // "I like this set": grow the full-screen list out of the button
+  const likeSet = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
+    setPhase('slip')
   }
 
-  /// Facebook / Messenger / Instagram open links in an in-app browser
-  // that usually can't save or share files
-  const inAppBrowser =
-    typeof navigator !== 'undefined' &&
-    /FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram/i.test(navigator.userAgent)
+  // "Get more": close the planner and jump to the products
+  const getMore = () => {
+    setPhase('plan')
+    onClose()
+    setTimeout(() => {
+      document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })
+    }, 150)
+  }
 
-  // Phones can share the image straight to Messenger
-  const canShare =
-    !inAppBrowser &&
-    typeof navigator !== 'undefined' &&
-    typeof navigator.share === 'function' &&
-    typeof navigator.canShare === 'function'
-
-  const shareImage = async () => {
-    try {
-      const blob = await (await fetch(orderImage)).blob()
-      const file = new File([blob], 'madonna-delicacies-order.png', { type: 'image/png' })
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'My Madonna Delicacies order' })
-      }
-    } catch {
-      // Cancelled or unsupported: they can still use "Save image"
-    }
+  // "Order now" opens Messenger, so just reset and close
+  const finish = () => {
+    setPhase('plan')
+    onClose()
   }
 
   // Close on Escape + lock page scroll while open
   useEffect(() => {
     if (!open) return
-    const onKey = (e) => e.key === 'Escape' && onClose()
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setPhase('plan')
+        onClose()
+      }
+    }
     document.addEventListener('keydown', onKey)
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -180,6 +148,121 @@ export default function RecommendationModal({ open, onClose }) {
 
   if (!open) return null
 
+  /* ---------- Full-screen views: the list, then "Great Choices!" ---------- */
+  if (phase !== 'plan' && active) {
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Your chosen set"
+        className="fixed inset-0 z-50 animate-expand overflow-y-auto bg-cream"
+        style={{ transformOrigin: `${origin.x}px ${origin.y}px` }}
+      >
+        <div
+          key={phase}
+          className="mx-auto flex min-h-full w-full max-w-md animate-fade-up flex-col justify-center gap-5 px-5"
+          style={{
+            paddingTop: 'max(2rem, env(safe-area-inset-top))',
+            paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
+          }}
+        >
+          {phase === 'slip' ? (
+            <>
+              <p className="flex items-center justify-center gap-1.5 text-xs font-medium uppercase tracking-widest text-cocoa/50">
+                <Camera size={14} />
+                Take a screenshot
+              </p>
+
+              {/* The list */}
+              <div className="overflow-hidden rounded-3xl border border-cream-dark bg-white shadow-xl shadow-cocoa/10">
+                <ul className="divide-y divide-cream-dark px-5">
+                  {active.items.map(({ product, combo, subtotal }) => (
+                    <li key={product.id} className="flex items-center gap-3 py-3">
+                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-mint-light">
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-cocoa/30">
+                            <UtensilsCrossed size={20} strokeWidth={1.25} />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display text-lg font-semibold leading-tight text-berry">
+                          {product.name}
+                        </p>
+                        {combo.map(({ size, qty }) => (
+                          <p key={size.name} className="text-xs text-cocoa/70">
+                            <span className="font-semibold text-cocoa">{qty}×</span> {size.name}
+                            {size.pieces ? ` · ${size.pieces} pcs` : ''}
+                          </p>
+                        ))}
+                      </div>
+
+                      <span className="shrink-0 whitespace-nowrap font-semibold text-cocoa">
+                        {peso(subtotal)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="flex items-baseline justify-between border-t-2 border-gold/50 bg-cream/60 px-5 py-4">
+                  <span className="text-sm font-semibold uppercase tracking-wider text-cocoa">
+                    Total
+                  </span>
+                  <span className="font-display text-4xl font-semibold text-berry">
+                    {peso(active.total)}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setPhase('next')}
+                className="inline-flex items-center gap-1.5 self-center rounded-full border border-cocoa/20 px-5 py-2.5 text-xs font-medium text-cocoa/60 transition-colors hover:border-berry hover:text-berry"
+              >
+                <Check size={14} />
+                Done
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="text-center">
+                <h3 className="text-4xl font-semibold text-berry">Great Choices!</h3>
+                <p className="mt-3 text-sm leading-relaxed text-cocoa/70">
+                  Add more to your order, or send it to us on Messenger now.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={getMore}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
+                >
+                  <Plus size={17} />
+                  Get more
+                </button>
+                <OrderButtons fullWidth label="Order now" onClick={finish} />
+              </div>
+
+              <button
+                onClick={() => setPhase('slip')}
+                className="mx-auto text-sm text-cocoa/60 transition-colors hover:text-berry"
+              >
+                Show my list again
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  /* ---------- The planner ---------- */
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-cocoa/60 p-4 backdrop-blur-sm sm:p-5"
@@ -217,268 +300,184 @@ export default function RecommendationModal({ open, onClose }) {
 
         {/* Scrollable body */}
         <div className="flex-1 overscroll-contain overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
-          {orderImage ? (
-            /* ---------- Image ready view ---------- */
-            <div className="space-y-5">
-              <div className="text-center">
-                <h3 className="text-3xl font-semibold text-berry">Your order image is ready!</h3>
-                <p className="mt-2 text-sm leading-relaxed text-cocoa/70">
-                  {inAppBrowser
-                    ? 'Take a screenshot of this screen, or press and hold the image to save it. Then send it to us on Messenger.'
-                    : 'You can send this screenshot to us on Messenger. Save it first, then attach it in the chat.'}
+          <div className="space-y-5">
+            {/* Guests */}
+            <SliderField
+              id="guests"
+              label="How many people are eating?"
+              value={n}
+              min={MIN_GUESTS}
+              max={MAX_GUESTS}
+              onChange={setGuests}
+            />
+
+            {/* Kids */}
+            <SliderField
+              id="kids"
+              label="How many of them are kids?"
+              value={kidsCount}
+              min={0}
+              max={n}
+              onChange={setKids}
+              unit={`${kidsCount === 1 ? 'kid' : 'kids'} · ${n - kidsCount} ${
+                n - kidsCount === 1 ? 'adult' : 'adults'
+              }`}
+            />
+
+            {/* Budget */}
+            <div>
+              <label htmlFor="budget" className="text-sm font-semibold text-cocoa">
+                What's your budget?
+              </label>
+              {b >= MIN_BUDGET && (
+                <p className="mt-0.5 text-xs text-cocoa/55">
+                  About {peso(Math.round(b / n))} per guest
                 </p>
+              )}
+
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  onClick={() => setBudget(Math.max(MIN_BUDGET, b - BUDGET_STEP))}
+                  disabled={b <= MIN_BUDGET}
+                  aria-label="Lower budget"
+                  className={stepButton}
+                >
+                  <Minus size={16} />
+                </button>
+
+                <div className="relative min-w-0 flex-1">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-display text-xl text-cocoa/40">
+                    ₱
+                  </span>
+                  <input
+                    id="budget"
+                    type="text"
+                    inputMode="numeric"
+                    value={budget === '' ? '' : Number(budget).toLocaleString('en-PH')}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '')
+                      setBudget(digits === '' ? '' : Math.min(Number(digits), MAX_BUDGET))
+                    }}
+                    onBlur={() => b < MIN_BUDGET && setBudget(MIN_BUDGET)}
+                    className="w-full rounded-2xl border border-cream-dark bg-white py-2 pl-9 pr-3 text-center font-display text-2xl font-semibold text-cocoa outline-none focus:border-berry"
+                  />
+                </div>
+
+                <button
+                  onClick={() =>
+                    setBudget(Math.min(MAX_BUDGET, Math.max(MIN_BUDGET, b + BUDGET_STEP)))
+                  }
+                  aria-label="Raise budget"
+                  className={stepButton}
+                >
+                  <Plus size={16} />
+                </button>
               </div>
-
-              <img
-                src={orderImage}
-                alt="Your order summary"
-                className="mx-auto w-full rounded-2xl border border-cream-dark shadow-lg"
-              />
-
-              <p className="text-center text-xs leading-relaxed text-cocoa/55">
-                {inAppBrowser
-                  ? 'Tip: for the easiest saving, tap the ⋯ menu in Facebook and choose "Open in browser". '
-                  : 'On iPhone, press and hold the image to save it. '}
-                In Messenger, please also tell us your name, the date and time you need it, and
-                pickup or delivery details.
-              </p>
             </div>
-          ) : (
-            /* ---------- Planner view ---------- */
-            <div className="space-y-5">
-              {/* Guests */}
-              <SliderField
-                id="guests"
-                label="How many people are eating?"
-                value={n}
-                min={MIN_GUESTS}
-                max={MAX_GUESTS}
-                onChange={setGuests}
-              />
 
-              {/* Kids */}
-              <SliderField
-                id="kids"
-                label="How many of them are kids?"
-                value={kidsCount}
-                min={0}
-                max={n}
-                onChange={setKids}
-                unit={`${kidsCount === 1 ? 'kid' : 'kids'} · ${n - kidsCount} ${n - kidsCount === 1 ? 'adult' : 'adults'
-                  }`}
-              />
-
-                            {/* Budget */}
-                            <div>
-                <label htmlFor="budget" className="text-sm font-semibold text-cocoa">
-                  What's your budget?
-                </label>
-                {b >= MIN_BUDGET && (
-                  <p className="mt-0.5 text-xs text-cocoa/55">
-                    About {peso(Math.round(b / n))} per guest
+            {/* Results */}
+            {active ? (
+              <div>
+                {result.tooLow && (
+                  <p className="mb-4 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-cocoa/80">
+                    {peso(b)} is a little under what we'd usually suggest for {n} guests. This
+                    lighter spread is the closest we can put together. Message us and we'll see
+                    what we can do!
                   </p>
                 )}
 
-                <div className="mt-3 flex items-center gap-3">
-                  <button
-                    onClick={() => setBudget(Math.max(MIN_BUDGET, b - BUDGET_STEP))}
-                    disabled={b <= MIN_BUDGET}
-                    aria-label="Lower budget"
-                    className={stepButton}
-                  >
-                    <Minus size={16} />
-                  </button>
-
-                  <div className="relative min-w-0 flex-1">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-display text-xl text-cocoa/40">
-                      ₱
-                    </span>
-                    <input
-                      id="budget"
-                      type="text"
-                      inputMode="numeric"
-                      value={budget === '' ? '' : Number(budget).toLocaleString('en-PH')}
-                      onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, '')
-                        setBudget(digits === '' ? '' : Math.min(Number(digits), MAX_BUDGET))
-                      }}
-                      onBlur={() => b < MIN_BUDGET && setBudget(MIN_BUDGET)}
-                      className="w-full rounded-2xl border border-cream-dark bg-white py-2 pl-9 pr-3 text-center font-display text-2xl font-semibold text-cocoa outline-none focus:border-berry"
-                    />
-                  </div>
-
-                  <button
-                    onClick={() =>
-                      setBudget(Math.min(MAX_BUDGET, Math.max(MIN_BUDGET, b + BUDGET_STEP)))
-                    }
-                    aria-label="Raise budget"
-                    className={stepButton}
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Results */}
-              {active ? (
-                <div>
-                  {result.tooLow && (
-                    <p className="mb-4 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-cocoa/80">
-                      {peso(b)} is a little under what we'd usually suggest for {n} guests. This
-                      lighter spread is the closest we can put together. Message us and we'll see
-                      what we can do!
-                    </p>
-                  )}
-
-                  {/* Option chips */}
-                  {spreads.length > 1 && (
-                    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-                      {spreads.map((spread, i) => (
-                        <button
-                          key={spread.id}
-                          onClick={() => setPick(i)}
-                          className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition-colors sm:px-4 sm:py-1.5 sm:text-sm ${i === activeIndex
+                {/* Option chips */}
+                {spreads.length > 1 && (
+                  <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                    {spreads.map((spread, i) => (
+                      <button
+                        key={spread.id}
+                        onClick={() => setPick(i)}
+                        className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition-colors sm:px-4 sm:py-1.5 sm:text-sm ${
+                          i === activeIndex
                             ? 'border-berry bg-berry text-white'
                             : 'border-cream-dark bg-white text-cocoa/70 hover:border-berry hover:text-berry'
-                            }`}
-                        >
-                          {spread.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  <ul key={active.id} className="mt-2 animate-fade-up divide-y divide-cream-dark">
-                    {active.items.map(({ product, tag, combo, subtotal }) => (
-                      <li key={product.id} className="py-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="min-w-0 font-display text-xl font-semibold leading-tight text-berry">
-                            {product.name}
-                          </p>
-                          <span className="shrink-0 whitespace-nowrap font-semibold text-cocoa">
-                            {peso(subtotal)}
-                          </span>
-                        </div>
-
-                        <ul className="mt-2 space-y-1">
-                          {combo.map(({ size, qty }) => (
-                            <li
-                              key={size.name}
-                              className="flex items-baseline gap-2 text-sm text-cocoa/75"
-                            >
-                              <span className="w-8 shrink-0 font-semibold text-cocoa">{qty}×</span>
-                              <span>
-                                {size.name}
-                                {size.pieces ? ` · ${size.pieces} pcs` : ''}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-
-                        {tag && (
-                          <span className="mt-2.5 inline-block rounded-full bg-mint-light px-2.5 py-0.5 text-xs font-medium text-cocoa/70">
-                            {tag}
-                          </span>
-                        )}
-                      </li>
+                        }`}
+                      >
+                        {spread.label}
+                      </button>
                     ))}
-                  </ul>
+                  </div>
+                )}
 
-                  {n > 80 && (
-                    <p className="mt-3 text-sm text-cocoa/70">
-                      Planning a big event? Message us and we'll prepare a custom quote.
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-cocoa/60">
-                  Enter a budget of {peso(MIN_BUDGET)} or more to see our suggestions.
-                </p>
-              )}
-            </div>
-          )}
+                <ul key={active.id} className="mt-2 animate-fade-up divide-y divide-cream-dark">
+                  {active.items.map(({ product, tag, combo, subtotal }) => (
+                    <li key={product.id} className="py-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="min-w-0 font-display text-xl font-semibold leading-tight text-berry">
+                          {product.name}
+                        </p>
+                        <span className="shrink-0 whitespace-nowrap font-semibold text-cocoa">
+                          {peso(subtotal)}
+                        </span>
+                      </div>
+
+                      <ul className="mt-2 space-y-1">
+                        {combo.map(({ size, qty }) => (
+                          <li
+                            key={size.name}
+                            className="flex items-baseline gap-2 text-sm text-cocoa/75"
+                          >
+                            <span className="w-8 shrink-0 font-semibold text-cocoa">{qty}×</span>
+                            <span>
+                              {size.name}
+                              {size.pieces ? ` · ${size.pieces} pcs` : ''}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {tag && (
+                        <span className="mt-2.5 inline-block rounded-full bg-mint-light px-2.5 py-0.5 text-xs font-medium text-cocoa/70">
+                          {tag}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+
+                {n > 80 && (
+                  <p className="mt-3 text-sm text-cocoa/70">
+                    Planning a big event? Message us and we'll prepare a custom quote.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-cocoa/60">
+                Enter a budget of {peso(MIN_BUDGET)} or more to see our suggestions.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Sticky footer */}
         {active && (
           <div className="border-t border-cream-dark bg-white px-5 py-4 sm:px-6 sm:py-5">
-            {orderImage ? (
-              <div className="space-y-3">
-                {/* Save / Share only work outside Facebook's in-app browser */}
-                {!inAppBrowser && (
-                  <div className={`grid gap-3 ${canShare ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                    <a
-                      href={orderImage}
-                      download="madonna-delicacies-order.png"
-                      className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
-                    >
-                      <Download size={17} />
-                      Save image
-                    </a>
-                    {canShare && (
-                      <button
-                        onClick={shareImage}
-                        className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
-                      >
-                        <Share2 size={17} />
-                        Share
-                      </button>
-                    )}
-                  </div>
-                )}
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm text-cocoa/70">Estimated total</span>
+              <span className="font-display text-3xl font-semibold text-berry">
+                {peso(active.total)}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-cocoa/50">
+              A friendly estimate. We'll confirm the final order with you.
+            </p>
 
-                <OrderButtons fullWidth size="lg" label="Open Messenger to send it" />
-
-                <button
-                  onClick={() => setOrderImage(null)}
-                  className="mx-auto flex items-center gap-1.5 text-sm text-cocoa/60 transition-colors hover:text-berry"
-                >
-                  <ArrowLeft size={14} />
-                  Edit my order
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm text-cocoa/70">Estimated total</span>
-                  <span className="font-display text-3xl font-semibold text-berry">
-                    {peso(active.total)}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-cocoa/50">
-                  A friendly estimate. We'll confirm the final order with you.
-                </p>
-
-                <button
-                  onClick={makeImage}
-                  disabled={making}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-berry px-8 py-3.5 sm:py-4 text-base font-medium text-white shadow-lg shadow-berry/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-berry-dark disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0"
-                >
-                  {making ? <Loader2 size={20} className="animate-spin" /> : <ImageIcon size={20} />}
-                  {making ? 'Creating your image…' : 'Create my order image'}
-                </button>
-                <p className="mt-2 text-center text-xs text-cocoa/50 hidden sm:block">
-                  You'll get an image of this list to send to us on Messenger.
-                </p>
-                {error && <p className="mt-2 text-center text-xs text-berry">{error}</p>}
-              </>
-            )}
+            <button
+              onClick={likeSet}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-berry px-8 py-3.5 text-base font-medium text-white shadow-lg shadow-berry/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-berry-dark sm:py-4"
+            >
+              <Heart size={20} />
+              I like this set
+            </button>
           </div>
         )}
       </div>
-
-      {/* Hidden order card: this is what gets turned into the image */}
-      {active && (
-        <div aria-hidden="true" style={{ position: 'fixed', left: '-10000px', top: 0 }}>
-          <OrderImageCard
-            ref={cardRef}
-            items={active.items}
-            total={active.total}
-            guests={n}
-            kids={kidsCount}
-          />
-        </div>
-      )}
     </div>
   )
 }
