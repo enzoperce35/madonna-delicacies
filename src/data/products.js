@@ -1,83 +1,107 @@
-// PLACEHOLDERS: replace names, descriptions, and prices with your real products.
-// Every product uses the same 3 bilao sizes; adjust diameters/servings to match yours.
+// pax = a number (e.g. 10) or a [min, max] range (e.g. [15, 20])
+// pieces = optional piece count shown next to the size name
+const s = (name, price, pax, pieces = null) => ({
+  name,
+  price,
+  pieces,
+  pax: Array.isArray(pax) ? { min: pax[0], max: pax[1] } : { min: pax, max: pax },
+})
 
-const sizes = (small, medium, large) => [
-  { name: 'Small',  diameter: '10"', serves: { min: 6,  max: 8  }, price: small },
-  { name: 'Medium', diameter: '14"', serves: { min: 10, max: 15 }, price: medium },
-  { name: 'Large',  diameter: '18"', serves: { min: 20, max: 25 }, price: large },
-]
+// Lumpiang Shanghai: a standard gathering is 3-6 pcs per person
+const lumpiaPax = (pcs) => [Math.round(pcs / 6), Math.round(pcs / 3)]
 
 export const products = [
   {
-    id: 'pancit-palabok',
-    name: 'Pancit Palabok',
+    id: 'palabok',
+    name: 'Palabok',
     category: 'Noodles',
-    description: 'Silky rice noodles under a rich shrimp sauce, crowned with egg, chicharon, and fresh calamansi.',
+    description: 'Silky noodles under a rich, savory sauce with all the classic toppings. A fiesta staple.',
     image: null, // later: import from '../assets/images/products/palabok.jpg'
-    sizes: sizes(450, 750, 1300),
+    sizes: [s('Medium', 500, 10), s('Large', 700, 15), s('XL', 850, 20)],
   },
   {
-    id: 'pancit-canton',
-    name: 'Pancit Canton Guisado',
-    category: 'Noodles',
-    description: 'Wok-tossed egg noodles with crisp vegetables and savory meats, the celebration classic for long life.',
-    image: null,
-    sizes: sizes(400, 700, 1200),
-  },
-  {
-    id: 'pancit-bihon',
-    name: 'Pancit Bihon',
-    category: 'Noodles',
-    description: 'Light, fragrant rice noodles sautéed with garlic, chicken, and vegetables. Easy to love at any table.',
-    image: null,
-    sizes: sizes(400, 700, 1200),
-  },
-  {
-    id: 'sotanghon',
-    name: 'Sotanghon Guisado',
-    category: 'Noodles',
-    description: 'Glass noodles simmered in golden annatto broth with chicken and mushrooms. Comforting and glossy.',
-    image: null,
-    sizes: sizes(420, 720, 1250),
-  },
-  {
-    id: 'party-spaghetti',
-    name: 'Party Spaghetti',
+    id: 'carbonara',
+    name: 'Carbonara',
     category: 'Pasta',
-    description: 'Sweet-style Filipino spaghetti with hotdog slices and a generous cheese topping. A kid-approved favorite.',
+    description: 'Creamy, comforting pasta that disappears first at every party.',
     image: null,
-    sizes: sizes(450, 780, 1350),
+    sizes: [s('Medium', 550, 10), s('Large', 750, 15), s('XL', 950, 20)],
   },
   {
-    id: 'baked-macaroni',
-    name: 'Baked Macaroni',
+    id: 'spaghetti',
+    name: 'Spaghetti',
     category: 'Pasta',
-    description: 'Creamy baked macaroni with a golden, bubbly cheese crust and a rich meat sauce.',
+    description: 'Sweet-style Filipino party spaghetti, a kid-approved celebration favorite.',
     image: null,
-    sizes: sizes(480, 820, 1400),
+    sizes: [s('Medium', 550, 10), s('Large', 750, 15), s('XL', 950, 20)],
   },
   {
-    id: 'puto-kutsinta',
-    name: 'Puto & Kutsinta Medley',
-    category: 'Kakanin',
-    description: 'Soft steamed puto and chewy kutsinta, served with freshly grated coconut.',
+    id: 'pansit-bihon',
+    name: 'Pansit Bihon',
+    category: 'Noodles',
+    description: 'Light, fragrant noodles sautéed with vegetables. A wish for long life on every table.',
     image: null,
-    sizes: sizes(350, 600, 1050),
+    sizes: [s('Medium', 600, 10), s('Large', 850, 15), s('XL', 1050, 20)],
   },
   {
-    id: 'biko',
-    name: 'Biko',
+    id: 'puto',
+    name: 'Puto',
     category: 'Kakanin',
-    description: 'Sticky rice slow-cooked in coconut milk and brown sugar, finished with caramelized latik.',
+    description: 'Soft, fluffy steamed rice cakes. The perfect sweet companion to any savory dish.',
     image: null,
-    sizes: sizes(380, 650, 1100),
+    sizes: [
+      s('Medium', 300, [15, 20], 35),
+      s('Large', 400, [25, 30], 50),
+      s('XL', 550, [30, 40], 70),
+    ],
   },
   {
-    id: 'sapin-sapin',
-    name: 'Sapin-Sapin',
-    category: 'Kakanin',
-    description: 'Colorful, layered coconut rice cake with a soft, chewy bite. Festive on every table.',
+    id: 'chicken-fillet',
+    name: 'Chicken Fillet',
+    category: 'Chicken',
+    description: 'Golden, tender chicken fillet that everyone from kids to lolas will reach for.',
     image: null,
-    sizes: sizes(400, 680, 1150),
+    sizes: [
+      s('Small', 320, [5, 7]),
+      s('Medium', 610, [12, 15]),
+      s('Large', 900, [18, 22]),
+      s('XL', 1200, [25, 30]),
+    ],
+  },
+  {
+    id: 'chicken-wings',
+    name: 'Chicken Wings',
+    category: 'Chicken',
+    description: 'Juicy, flavorful wings piled high. Great for barkada nights and big family tables.',
+    image: null,
+    sizes: [
+      s('Medium', 730, [7, 10], 30),
+      s('Large', 900, [10, 14], 40),
+      s('XL', 1100, [13, 18], 50),
+    ],
+  },
+  {
+    id: 'siomai',
+    name: 'Siomai',
+    category: 'Dimsum',
+    description: 'Plump, savory dumplings, steamed and ready to share. Bite-sized and easy to love.',
+    image: null,
+    sizes: [
+      s('Medium', 400, [10, 12], 50),
+      s('Large', 600, [15, 18], 75),
+      s('XL', 800, [20, 25], 100),
+    ],
+  },
+  {
+    id: 'lumpiang-shanghai',
+    name: 'Lumpiang Shanghai',
+    category: 'Lumpia',
+    description: 'Crisp, golden rolls packed with savory filling. The party snack nobody can stop at one.',
+    image: null,
+    sizes: [
+      s('Medium', 500, lumpiaPax(72), 72),
+      s('Large', 750, lumpiaPax(108), 108),
+      s('XL', 1000, lumpiaPax(144), 144),
+    ],
   },
 ]

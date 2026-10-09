@@ -65,7 +65,7 @@ export default function Hero({ onHelpClick }) {
             <ChefHat size={18} className="text-gold-dark" /> Freshly made to order
           </span>
           <span className="inline-flex items-center gap-2">
-            <Users size={18} className="text-gold-dark" /> Sizes for 6 to 25 guests
+            <Users size={18} className="text-gold-dark" /> Sizes for 5 to 40+ guests
           </span>
           <span className="inline-flex items-center gap-2">
             <Clock size={18} className="text-gold-dark" /> Open {siteConfig.hours}

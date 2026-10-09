@@ -4,11 +4,13 @@ import { siteConfig } from '../data/siteConfig'
 const sizes = {
   md: 'px-5 py-3 text-sm',
   lg: 'px-7 py-4 text-base',
+  sm: 'px-4 py-2.5 text-sm',
 }
 
 export default function OrderButtons({
   variant = 'light', // 'light' for cream backgrounds, 'dark' for cocoa backgrounds
   size = 'md',
+  compact = false, // shorter labels, always in one row (used inside product cards)
   className = '',
 }) {
   const base =
@@ -25,23 +27,26 @@ export default function OrderButtons({
           message: 'border-2 border-berry text-berry hover:bg-berry hover:text-white',
         }
 
+  const layout = compact ? 'flex-row' : 'flex-col sm:flex-row'
+  const buttonSize = compact ? sizes.sm : sizes[size]
+
   return (
-    <div className={`flex flex-col gap-3 sm:flex-row ${className}`}>
+    <div className={`flex gap-3 ${layout} ${className}`}>
       <a
         href={siteConfig.phoneHref}
-        className={`${base} ${sizes[size]} ${styles.call}`}
+        className={`${base} ${buttonSize} ${styles.call} ${compact ? 'flex-1' : ''}`}
       >
-        <Phone size={18} />
-        Call to Order
+        <Phone size={16} />
+        {compact ? 'Call' : 'Call to Order'}
       </a>
       <a
         href={siteConfig.messengerUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={`${base} ${sizes[size]} ${styles.message}`}
+        className={`${base} ${buttonSize} ${styles.message} ${compact ? 'flex-1' : ''}`}
       >
-        <MessageCircle size={18} />
-        Message on Messenger
+        <MessageCircle size={16} />
+        {compact ? 'Messenger' : 'Message on Messenger'}
       </a>
     </div>
   )
