@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import ProductsGrid from './components/ProductsGrid'
+import Footer from './components/Footer'
 import RecommendationModal from './components/RecommendationModal'
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
         <Hero onHelpClick={openHelp} />
         <ProductsGrid onHelpClick={openHelp} />
       </main>
+      <Footer onHelpClick={openHelp} />
       <RecommendationModal open={helpOpen} onClose={closeHelp} />
     </>
   )
