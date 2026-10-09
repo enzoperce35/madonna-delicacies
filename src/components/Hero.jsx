@@ -1,6 +1,7 @@
 import { ArrowRight, ChefHat, Clock, Users } from 'lucide-react'
 import OrderButtons from './OrderButtons'
 import { siteConfig } from '../data/siteConfig'
+import heroPhoto from '../assets/images/hero.webp'
 
 export default function Hero({ onHelpClick }) {
   return (
@@ -43,17 +44,18 @@ export default function Hero({ onHelpClick }) {
           </button>
         </div>
 
-        {/* Image placeholder: swap with a real bilao photo later */}
-        <div className="relative mx-auto w-full max-w-sm md:max-w-md">
-          <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-t-full rounded-b-3xl border-2 border-gold/50" />
-          <div className="relative flex aspect-[4/5] items-center justify-center rounded-t-full rounded-b-3xl bg-mint-light">
-            {/* Later: <img src={heroPhoto} alt="..." className="h-full w-full rounded-t-full rounded-b-3xl object-cover" /> */}
-            <div className="text-center text-cocoa/40">
-              <ChefHat size={56} className="mx-auto" strokeWidth={1.25} />
-              <p className="mt-3 text-xs font-medium uppercase tracking-widest">
-                Your signature bilao photo
-              </p>
-            </div>
+        {/* Hero photo (4-dish collage) */}
+        <div className="relative mx-auto w-full max-w-xl">
+          <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-3xl border-2 border-gold/50" />
+          <div className="relative aspect-[7/6] overflow-hidden rounded-3xl bg-white shadow-xl shadow-cocoa/10">
+            <img
+              src={heroPhoto}
+              alt="Madonna Delicacies bilao spread: puto, lumpiang shanghai, chicken fillet, and palabok"
+              width="1400"
+              height="1200"
+              fetchPriority="high"
+              className="h-full w-full object-cover"
+            />
           </div>
         </div>
       </div>

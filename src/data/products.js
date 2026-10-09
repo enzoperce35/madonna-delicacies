@@ -1,3 +1,16 @@
+// Auto-load every image in assets/images/products, matched by filename = product id
+const images = import.meta.glob('../assets/images/products/*.{jpg,jpeg,png,webp}', {
+  eager: true,
+  import: 'default',
+})
+
+const imageFor = (id) => {
+  const match = Object.entries(images).find(
+    ([path]) => path.split('/').pop().replace(/\.\w+$/, '') === id
+  )
+  return match ? match[1] : null
+}
+
 // pax = a number (e.g. 10) or a [min, max] range (e.g. [15, 20])
 // pieces = optional piece count shown next to the size name
 const s = (name, price, pax, pieces = null) => ({
@@ -10,7 +23,7 @@ const s = (name, price, pax, pieces = null) => ({
 // Lumpiang Shanghai: a standard gathering is 3-6 pcs per person
 const lumpiaPax = (pcs) => [Math.round(pcs / 6), Math.round(pcs / 3)]
 
-export const products = [
+const baseProducts = [
   {
     id: 'palabok',
     name: 'Palabok',
@@ -105,3 +118,8 @@ export const products = [
     ],
   },
 ]
+
+export const products = baseProducts.map((product) => ({
+  ...product,
+  image: imageFor(product.id),
+}))
