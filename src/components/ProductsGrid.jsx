@@ -9,11 +9,11 @@ export default function ProductsGrid({ onHelpClick }) {
       <div className="mx-auto max-w-2xl text-center">
         <p className="inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.25em] text-gold-dark">
           <span className="h-px w-8 bg-gold" />
-          Our Signature Bilao
+          Our Signature Meals
           <span className="h-px w-8 bg-gold" />
         </p>
         <h2 className="mt-4 text-3xl font-semibold text-cocoa sm:text-4xl md:text-5xl">
-          Nine reasons to celebrate
+          More reasons to celebrate
         </h2>
         <p className="mt-4 text-base leading-relaxed text-cocoa/70">
           Choose your favorites, then message us on Messenger to place your order.

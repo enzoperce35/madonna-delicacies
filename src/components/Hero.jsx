@@ -15,7 +15,7 @@ export default function Hero({ onHelpClick }) {
         <div>
           <p className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-gold-dark">
             <span className="h-px w-8 bg-gold" />
-            Artisan Bilao Spreads
+            Para sa kahit anong handaan
           </p>
 
           <h1 className="text-[2.75rem] font-semibold leading-[1.05] text-berry sm:text-6xl lg:text-7xl">
@@ -23,7 +23,7 @@ export default function Hero({ onHelpClick }) {
           </h1>
 
           <h2 className="mt-5 text-2xl font-medium italic leading-snug text-cocoa sm:text-3xl">
-            Bilao spreads made to gather the people you love.
+            Bring everyone to the table.
           </h2>
 
           <p className="mt-5 max-w-md text-base leading-relaxed text-cocoa/75">
