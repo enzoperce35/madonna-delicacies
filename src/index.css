@@ -72,8 +72,8 @@ input[type="range"].slider {
 input[type="range"].slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  height: 28px;
-  width: 28px;
+  height: 24px;
+  width: 24px;
   border-radius: 9999px;
   background: white;
   border: 3px solid var(--color-berry);
@@ -81,8 +81,8 @@ input[type="range"].slider::-webkit-slider-thumb {
 }
 
 input[type="range"].slider::-moz-range-thumb {
-  height: 22px;
-  width: 22px;
+  height: 20px;
+  width: 20px;
   border-radius: 9999px;
   background: white;
   border: 3px solid var(--color-berry);

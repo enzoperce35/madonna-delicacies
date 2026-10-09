@@ -35,19 +35,26 @@ const OrderImageCard = forwardRef(function OrderImageCard({ items, total, guests
         {/* Items */}
         <ul className="mt-3 divide-y divide-cream-dark">
           {items.map(({ product, combo, subtotal }) => (
-            <li key={product.id} className="flex items-start justify-between gap-6 py-4">
-              <div>
-                <p className="font-display text-2xl font-semibold text-berry">{product.name}</p>
-                <p className="mt-0.5 text-sm text-cocoa/70">
-                  {combo
-                    .map(
-                      ({ size, qty }) =>
-                        `${qty} × ${size.name}${size.pieces ? ` (${size.pieces} pcs)` : ''}`
-                    )
-                    .join(' + ')}
+            <li key={product.id} className="py-4">
+              <div className="flex items-start justify-between gap-6">
+                <p className="font-display text-2xl font-semibold leading-tight text-berry">
+                  {product.name}
                 </p>
+                <span className="shrink-0 whitespace-nowrap text-lg font-semibold">
+                  {peso(subtotal)}
+                </span>
               </div>
-              <span className="shrink-0 text-lg font-semibold">{peso(subtotal)}</span>
+              <ul className="mt-2 space-y-1">
+                {combo.map(({ size, qty }) => (
+                  <li key={size.name} className="flex items-baseline gap-2 text-sm text-cocoa/70">
+                    <span className="w-8 shrink-0 font-semibold text-cocoa">{qty}×</span>
+                    <span>
+                      {size.name}
+                      {size.pieces ? ` · ${size.pieces} pcs` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </li>
           ))}
         </ul>

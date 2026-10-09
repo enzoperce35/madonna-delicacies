@@ -25,32 +25,47 @@ const MAX_BUDGET = 200000
 const BUDGET_STEP = 500
 
 const stepButton =
-  'rounded-full border border-cream-dark bg-white p-3 text-cocoa transition-colors hover:border-berry hover:text-berry disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-cream-dark disabled:hover:text-cocoa'
+  'shrink-0 rounded-full border border-cream-dark bg-white p-2.5 text-cocoa transition-colors hover:border-berry hover:text-berry disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-cream-dark disabled:hover:text-cocoa'
 
-// A big number with − / + buttons and a slider underneath
+// Label + big number on one row, then  −  slider  +  underneath
 function SliderField({ id, label, value, min, max, onChange, unit }) {
   const percent = max > min ? ((value - min) / (max - min)) * 100 : 0
 
   return (
     <div>
-      <label htmlFor={id} className="text-sm font-semibold text-cocoa">
-        {label}
-      </label>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <label htmlFor={id} className="text-sm font-semibold text-cocoa">
+            {label}
+          </label>
+          {unit && <p className="mt-0.5 text-xs text-cocoa/55">{unit}</p>}
+        </div>
+        <p className="font-display text-3xl font-semibold leading-none text-cocoa sm:text-4xl">
+          {value}
+        </p>
+      </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3">
+      <div className="mt-3 flex items-center gap-3">
         <button
           onClick={() => onChange(Math.max(min, value - 1))}
           disabled={value <= min}
           aria-label={`Decrease ${label}`}
           className={stepButton}
         >
-          <Minus size={18} />
+          <Minus size={16} />
         </button>
 
-        <div className="text-center">
-          <p className="font-display text-5xl font-semibold leading-none text-cocoa">{value}</p>
-          <p className="mt-1.5 text-xs text-cocoa/55">{unit}</p>
-        </div>
+        <input
+          id={id}
+          type="range"
+          min={min}
+          max={max}
+          step={1}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="slider min-w-0 flex-1"
+          style={{ '--fill': `${percent}%` }}
+        />
 
         <button
           onClick={() => onChange(Math.min(max, value + 1))}
@@ -58,33 +73,17 @@ function SliderField({ id, label, value, min, max, onChange, unit }) {
           aria-label={`Increase ${label}`}
           className={stepButton}
         >
-          <Plus size={18} />
+          <Plus size={16} />
         </button>
-      </div>
-
-      <input
-        id={id}
-        type="range"
-        min={min}
-        max={max}
-        step={1}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="slider mt-5"
-        style={{ '--fill': `${percent}%` }}
-      />
-      <div className="mt-1.5 flex justify-between text-xs text-cocoa/40">
-        <span>{min}</span>
-        <span>{max}</span>
       </div>
     </div>
   )
 }
 
 export default function RecommendationModal({ open, onClose }) {
-  const [guests, setGuests] = useState(20)
-  const [kids, setKids] = useState(5)
-  const [budget, setBudget] = useState(5000)
+  const [guests, setGuests] = useState(10)
+  const [kids, setKids] = useState(3)
+  const [budget, setBudget] = useState(1000)
   const [pick, setPick] = useState(0)
 
   const [orderImage, setOrderImage] = useState(null) // data URL of the finished image
@@ -183,23 +182,27 @@ export default function RecommendationModal({ open, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-cocoa/60 backdrop-blur-sm sm:items-center sm:p-5"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-cocoa/60 p-4 backdrop-blur-sm sm:p-5"
+      style={{
+        paddingTop: 'max(1rem, env(safe-area-inset-top))',
+        paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+      }}
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="help-title"
-        className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-cream shadow-2xl sm:rounded-3xl"
+        className="flex max-h-full w-full max-w-lg flex-col overflow-hidden rounded-3xl bg-cream shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-cream-dark px-6 py-5">
+        <div className="flex items-start justify-between border-b border-cream-dark px-5 py-4 sm:px-6 sm:py-5">
           <div>
             <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold-dark">
               <Sparkles size={14} /> Party planner
             </p>
-            <h2 id="help-title" className="mt-1 text-3xl font-semibold text-berry">
+            <h2 id="help-title" className="mt-1 text-2xl font-semibold text-berry sm:text-3xl">
               Help Me Choose
             </h2>
           </div>
@@ -213,7 +216,7 @@ export default function RecommendationModal({ open, onClose }) {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="flex-1 overscroll-contain overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
           {orderImage ? (
             /* ---------- Image ready view ---------- */
             <div className="space-y-5">
@@ -242,7 +245,7 @@ export default function RecommendationModal({ open, onClose }) {
             </div>
           ) : (
             /* ---------- Planner view ---------- */
-            <div className="space-y-7">
+            <div className="space-y-5">
               {/* Guests */}
               <SliderField
                 id="guests"
@@ -251,7 +254,6 @@ export default function RecommendationModal({ open, onClose }) {
                 min={MIN_GUESTS}
                 max={MAX_GUESTS}
                 onChange={setGuests}
-                unit="guests"
               />
 
               {/* Kids */}
@@ -266,11 +268,17 @@ export default function RecommendationModal({ open, onClose }) {
                   }`}
               />
 
-              {/* Budget */}
-              <div>
+                            {/* Budget */}
+                            <div>
                 <label htmlFor="budget" className="text-sm font-semibold text-cocoa">
                   What's your budget?
                 </label>
+                {b >= MIN_BUDGET && (
+                  <p className="mt-0.5 text-xs text-cocoa/55">
+                    About {peso(Math.round(b / n))} per guest
+                  </p>
+                )}
+
                 <div className="mt-3 flex items-center gap-3">
                   <button
                     onClick={() => setBudget(Math.max(MIN_BUDGET, b - BUDGET_STEP))}
@@ -278,10 +286,11 @@ export default function RecommendationModal({ open, onClose }) {
                     aria-label="Lower budget"
                     className={stepButton}
                   >
-                    <Minus size={18} />
+                    <Minus size={16} />
                   </button>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-display text-2xl text-cocoa/40">
+
+                  <div className="relative min-w-0 flex-1">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-display text-xl text-cocoa/40">
                       ₱
                     </span>
                     <input
@@ -294,9 +303,10 @@ export default function RecommendationModal({ open, onClose }) {
                         setBudget(digits === '' ? '' : Math.min(Number(digits), MAX_BUDGET))
                       }}
                       onBlur={() => b < MIN_BUDGET && setBudget(MIN_BUDGET)}
-                      className="w-36 rounded-2xl border border-cream-dark bg-white py-3 pl-9 pr-3 text-center font-display text-3xl font-semibold text-cocoa outline-none focus:border-berry"
+                      className="w-full rounded-2xl border border-cream-dark bg-white py-2 pl-9 pr-3 text-center font-display text-2xl font-semibold text-cocoa outline-none focus:border-berry"
                     />
                   </div>
+
                   <button
                     onClick={() =>
                       setBudget(Math.min(MAX_BUDGET, Math.max(MIN_BUDGET, b + BUDGET_STEP)))
@@ -304,14 +314,9 @@ export default function RecommendationModal({ open, onClose }) {
                     aria-label="Raise budget"
                     className={stepButton}
                   >
-                    <Plus size={18} />
+                    <Plus size={16} />
                   </button>
                 </div>
-                {b >= MIN_BUDGET && (
-                  <p className="mt-2 text-xs text-cocoa/50">
-                    About {peso(Math.round(b / n))} per guest
-                  </p>
-                )}
               </div>
 
               {/* Results */}
@@ -332,7 +337,7 @@ export default function RecommendationModal({ open, onClose }) {
                         <button
                           key={spread.id}
                           onClick={() => setPick(i)}
-                          className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${i === activeIndex
+                          className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition-colors sm:px-4 sm:py-1.5 sm:text-sm ${i === activeIndex
                             ? 'border-berry bg-berry text-white'
                             : 'border-cream-dark bg-white text-cocoa/70 hover:border-berry hover:text-berry'
                             }`}
@@ -345,26 +350,36 @@ export default function RecommendationModal({ open, onClose }) {
 
                   <ul key={active.id} className="mt-2 animate-fade-up divide-y divide-cream-dark">
                     {active.items.map(({ product, tag, combo, subtotal }) => (
-                      <li key={product.id} className="flex items-start justify-between gap-4 py-4">
-                        <div>
-                          <p className="font-display text-xl font-semibold text-berry">
+                      <li key={product.id} className="py-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="min-w-0 font-display text-xl font-semibold leading-tight text-berry">
                             {product.name}
                           </p>
-                          <p className="mt-0.5 text-sm text-cocoa/75">
-                            {combo
-                              .map(
-                                ({ size, qty }) =>
-                                  `${qty} × ${size.name}${size.pieces ? ` (${size.pieces} pcs)` : ''}`
-                              )
-                              .join(' + ')}
-                          </p>
-                          {tag && (
-                            <span className="mt-2 inline-block rounded-full bg-mint-light px-2.5 py-0.5 text-xs font-medium text-cocoa/70">
-                              {tag}
-                            </span>
-                          )}
+                          <span className="shrink-0 whitespace-nowrap font-semibold text-cocoa">
+                            {peso(subtotal)}
+                          </span>
                         </div>
-                        <span className="shrink-0 font-semibold text-cocoa">{peso(subtotal)}</span>
+
+                        <ul className="mt-2 space-y-1">
+                          {combo.map(({ size, qty }) => (
+                            <li
+                              key={size.name}
+                              className="flex items-baseline gap-2 text-sm text-cocoa/75"
+                            >
+                              <span className="w-8 shrink-0 font-semibold text-cocoa">{qty}×</span>
+                              <span>
+                                {size.name}
+                                {size.pieces ? ` · ${size.pieces} pcs` : ''}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {tag && (
+                          <span className="mt-2.5 inline-block rounded-full bg-mint-light px-2.5 py-0.5 text-xs font-medium text-cocoa/70">
+                            {tag}
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -386,7 +401,7 @@ export default function RecommendationModal({ open, onClose }) {
 
         {/* Sticky footer */}
         {active && (
-          <div className="border-t border-cream-dark bg-white px-6 py-5">
+          <div className="border-t border-cream-dark bg-white px-5 py-4 sm:px-6 sm:py-5">
             {orderImage ? (
               <div className="space-y-3">
                 {/* Save / Share only work outside Facebook's in-app browser */}
@@ -437,12 +452,12 @@ export default function RecommendationModal({ open, onClose }) {
                 <button
                   onClick={makeImage}
                   disabled={making}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-berry px-8 py-4 text-base font-medium text-white shadow-lg shadow-berry/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-berry-dark disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-berry px-8 py-3.5 sm:py-4 text-base font-medium text-white shadow-lg shadow-berry/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-berry-dark disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0"
                 >
                   {making ? <Loader2 size={20} className="animate-spin" /> : <ImageIcon size={20} />}
                   {making ? 'Creating your image…' : 'Create my order image'}
                 </button>
-                <p className="mt-2 text-center text-xs text-cocoa/50">
+                <p className="mt-2 text-center text-xs text-cocoa/50 hidden sm:block">
                   You'll get an image of this list to send to us on Messenger.
                 </p>
                 {error && <p className="mt-2 text-center text-xs text-berry">{error}</p>}

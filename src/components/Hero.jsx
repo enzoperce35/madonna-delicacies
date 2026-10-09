@@ -10,7 +10,7 @@ export default function Hero({ onHelpClick }) {
       <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-mint-light blur-3xl" />
       <div className="pointer-events-none absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-gold/10 blur-3xl" />
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 md:grid-cols-2 md:py-24">
+      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-10 sm:py-14 md:grid-cols-2 md:gap-12 md:py-24">
         {/* Text */}
         <div>
           <p className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-gold-dark">
@@ -18,7 +18,7 @@ export default function Hero({ onHelpClick }) {
             Artisan Bilao Spreads
           </p>
 
-          <h1 className="text-5xl font-semibold leading-[1.05] text-berry sm:text-6xl lg:text-7xl">
+          <h1 className="text-[2.75rem] font-semibold leading-[1.05] text-berry sm:text-6xl lg:text-7xl">
             {siteConfig.name}
           </h1>
 
@@ -30,23 +30,6 @@ export default function Hero({ onHelpClick }) {
             From birthdays and baptisms to reunions and Noche Buena, our handcrafted
             bilao bring generous flavor and a festive feel to every table.
           </p>
-
-          <div className="mt-8">
-            <OrderButtons size="lg" />
-            <p className="mt-3 text-sm text-cocoa/60">
-              We take orders through Messenger so every detail is in writing.
-            </p>
-          </div>
-
-          <button
-            onClick={onHelpClick}
-            className="group mt-6 inline-flex items-center gap-2 text-sm font-medium text-cocoa/80 transition-colors hover:text-berry"
-          >
-            <span className="border-b border-gold pb-0.5">
-              Not sure what to order? Let us help you choose
-            </span>
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-          </button>
         </div>
 
         {/* Hero photo (4-dish collage) */}
@@ -63,11 +46,21 @@ export default function Hero({ onHelpClick }) {
             />
           </div>
         </div>
+
+        <button
+            onClick={onHelpClick}
+            className="group mt-6 inline-flex items-center gap-2 text-sm font-medium text-cocoa/80 transition-colors hover:text-berry"
+          >
+            <span className="border-b border-gold pb-0.5">
+              Not sure what to order? Let us help you choose
+            </span>
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          </button>
       </div>
 
       {/* Trust strip */}
       <div className="relative border-y border-cream-dark bg-white/50">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-4 px-5 py-5 text-sm text-cocoa/80 sm:flex-row sm:gap-12">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-3 px-5 py-5 text-sm text-cocoa/80 sm:flex-row sm:gap-12">
           <span className="inline-flex items-center gap-2">
             <ChefHat size={18} className="text-gold-dark" /> Freshly made to order
           </span>
