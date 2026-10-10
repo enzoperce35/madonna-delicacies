@@ -164,9 +164,14 @@ export default function ProductCard({ product }) {
                     </div>
 
                     <div className="flex items-center justify-between gap-4 px-5 py-4">
-                      <p className="min-w-0 font-display text-2xl font-semibold leading-tight text-berry">
-                        {product.name} <span className="text-cocoa">{selected.name}</span>
-                      </p>
+                      <div className="min-w-0">
+                        <p className="font-display text-2xl font-semibold leading-tight text-berry">
+                          {product.name} <span className="text-cocoa">{selected.name}</span>
+                        </p>
+                        <p className="mt-1 text-sm text-cocoa/60">
+                          {selected.pieces ? `${selected.pieces} pcs` : `Serves ${serves(selected)}`}
+                        </p>
+                      </div>
                       <span className="shrink-0 whitespace-nowrap font-display text-3xl font-semibold text-cocoa">
                         {peso(selected.price)}
                       </span>

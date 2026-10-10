@@ -6,6 +6,9 @@ import { recommendByBudget } from '../utils/recommend'
 
 const peso = (amount) => `₱${amount.toLocaleString('en-PH')}`
 
+const serves = (size) =>
+  size.pax.min === size.pax.max ? size.pax.min : `${size.pax.min}–${size.pax.max}`
+
 const MIN_GUESTS = 10
 const MAX_GUESTS = 200
 
@@ -199,7 +202,7 @@ export default function RecommendationModal({ open, onClose }) {
                         {combo.map(({ size, qty }) => (
                           <p key={size.name} className="text-xs text-cocoa/70">
                             <span className="font-semibold text-cocoa">{qty}×</span> {size.name}
-                            {size.pieces ? ` · ${size.pieces} pcs` : ''}
+                            {size.pieces ? ` · ${size.pieces} pcs` : ` · serves ${serves(size)}`}
                           </p>
                         ))}
                       </div>
