@@ -9,6 +9,9 @@ const peso = (amount) => `₱${amount.toLocaleString('en-PH')}`
 const serves = (size) =>
   size.pax.min === size.pax.max ? size.pax.min : `${size.pax.min}–${size.pax.max}`
 
+// Pieces when a size has them, otherwise how many it serves
+const detail = (size) => (size.pieces ? `${size.pieces} pcs` : `Serves ${serves(size)}`)
+
 const MIN_GUESTS = 10
 const MAX_GUESTS = 200
 
@@ -78,7 +81,7 @@ export default function RecommendationModal({ open, onClose }) {
   const [budget, setBudget] = useState(1000)
   const [pick, setPick] = useState(0)
 
-  const [phase, setPhase] = useState('plan') // 'plan' → 'slip' (screenshot screen) → 'next' (Great Choices!)
+  const [phase, setPhase] = useState('plan') // 'plan' → 'slip' (Step 1) → 'next' (Step 2)
   const [origin, setOrigin] = useState({ x: 0, y: 0 }) // where the full-screen view grows from
 
   const n = guests
@@ -109,7 +112,7 @@ export default function RecommendationModal({ open, onClose }) {
   const activeIndex = spreads ? Math.min(pick, spreads.length - 1) : 0
   const active = spreads ? spreads[activeIndex] : null
 
-  // "I like this set": grow the full-screen list out of the button
+  // "I love this set": grow the full-screen list out of the button
   const likeSet = (e) => {
     const rect = e.currentTarget.getBoundingClientRect()
     setOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
@@ -125,7 +128,7 @@ export default function RecommendationModal({ open, onClose }) {
     }, 150)
   }
 
-  // "Order now" opens Messenger, so just reset and close
+  // "Send screenshot" opens Messenger, so just reset and close
   const finish = () => {
     setPhase('plan')
     onClose()
@@ -151,7 +154,7 @@ export default function RecommendationModal({ open, onClose }) {
 
   if (!open) return null
 
-  /* ---------- Full-screen views: the list, then "Great Choices!" ---------- */
+  /* ---------- Full-screen views: Step 1 (the list), Step 2 (send it) ---------- */
   if (phase !== 'plan' && active) {
     return (
       <div
@@ -173,11 +176,15 @@ export default function RecommendationModal({ open, onClose }) {
             <>
               <p className="flex items-center justify-center gap-1.5 text-xs font-medium uppercase tracking-widest text-cocoa/50">
                 <Camera size={14} />
-                Take a screenshot
+                Step 1 of 2 · Take a screenshot
               </p>
 
               {/* The list */}
               <div className="overflow-hidden rounded-3xl border border-cream-dark bg-white shadow-xl shadow-cocoa/10">
+                <div className="border-b border-cream-dark px-5 py-2">
+                  <img src={logo} alt="Madonna Delicacies" className="h-10 w-auto" />
+                </div>
+
                 <ul className="divide-y divide-cream-dark px-5">
                   {active.items.map(({ product, combo, subtotal }) => (
                     <li key={product.id} className="flex items-center gap-3 py-3">
@@ -201,8 +208,8 @@ export default function RecommendationModal({ open, onClose }) {
                         </p>
                         {combo.map(({ size, qty }) => (
                           <p key={size.name} className="text-xs text-cocoa/70">
-                            <span className="font-semibold text-cocoa">{qty}×</span> {size.name}
-                            {size.pieces ? ` · ${size.pieces} pcs` : ` · serves ${serves(size)}`}
+                            <span className="font-semibold text-cocoa">{qty}×</span> {size.name} ·{' '}
+                            {detail(size)}
                           </p>
                         ))}
                       </div>
@@ -235,22 +242,36 @@ export default function RecommendationModal({ open, onClose }) {
           ) : (
             <>
               <div className="text-center">
-                <h3 className="text-4xl font-semibold text-berry">Great Choices!</h3>
+                <p className="text-xs font-medium uppercase tracking-widest text-gold-dark">
+                  Step 2 of 2
+                </p>
+                <h3 className="mt-2 text-4xl font-semibold text-berry">Great Choices!</h3>
                 <p className="mt-3 text-sm leading-relaxed text-cocoa/70">
-                  Add more to your order, or send it to us on Messenger now.
+                  Your order isn't sent yet. Send your screenshot to us on Messenger and we'll
+                  confirm it with you.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-3">
+                <OrderButtons
+                  fullWidth
+                  size="lg"
+                  label="Send screenshot on Messenger"
+                  onClick={finish}
+                />
                 <button
                   onClick={getMore}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
                 >
                   <Plus size={17} />
                   Get more
                 </button>
-                <OrderButtons fullWidth label="Order now" onClick={finish} />
               </div>
+
+              <p className="text-center text-xs leading-relaxed text-cocoa/55">
+                In Messenger, tap the photo icon and choose your screenshot. Please also tell us
+                your name, the date and time you need it, and pickup or delivery details.
+              </p>
 
               <button
                 onClick={() => setPhase('slip')}
@@ -476,7 +497,7 @@ export default function RecommendationModal({ open, onClose }) {
               className="mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-berry px-8 py-3.5 text-base font-medium text-white shadow-lg shadow-berry/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-berry-dark sm:py-4"
             >
               <Heart size={20} />
-              I like this set
+              I love this set
             </button>
           </div>
         )}
