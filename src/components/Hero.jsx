@@ -27,8 +27,7 @@ export default function Hero({ onHelpClick }) {
           </h2>
 
           <p className="mt-5 max-w-md text-base leading-relaxed text-cocoa/75">
-            From birthdays and baptisms to reunions and Noche Buena, our handcrafted
-            bilao bring generous flavor and a festive feel to every table.
+            Para sa birthdays, anniversaries, reunions, o mga simpleng sama-sama ng pamilya, barkada, at mga ka-trabaho.., let Mama Donna’s recipes bring delicious food and unforgettable moments to your table.
           </p>
         </div>
 

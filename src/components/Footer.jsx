@@ -14,7 +14,7 @@ function FacebookIcon({ size = 18 }) {
 
 const quickLinks = [
   { label: 'Home', href: '#top' },
-  { label: 'Our Products', href: '#products' },
+  { label: 'Order Now', href: '#products' },
 ]
 
 export default function Footer({ onHelpClick }) {

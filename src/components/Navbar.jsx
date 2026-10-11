@@ -15,10 +15,10 @@ export default function Navbar({ onHelpClick }) {
           <img src={logo} alt={`${siteConfig.name} logo`} className="h-14 w-auto sm:h-16" />
         </a>
 
-        {/* Phones & small tablets: jump to the products */}
-        <a
+                {/* Phones & small tablets: jump to the products */}
+                <a
           href="#products"
-          className="py-2.5 text-sm font-medium text-berry transition-colors hover:text-berry-dark md:hidden"
+          className="shimmer-text py-2.5 text-sm font-semibold md:hidden"
         >
           Order Now
         </a>

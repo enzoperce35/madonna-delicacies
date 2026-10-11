@@ -21,7 +21,7 @@ const s = (name, price, pax, pieces = null) => ({
 })
 
 // Lumpiang Shanghai: a standard gathering is 3-6 pcs per person
-const lumpiaPax = (pcs) => [Math.round(pcs / 6), Math.round(pcs / 3)]
+const lumpiaPax = (pcs) => [Math.round(pcs / 6), Math.round(pcs / 4)]
 
 const baseProducts = [
   {
