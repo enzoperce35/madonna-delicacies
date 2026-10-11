@@ -20,7 +20,7 @@ export default function Navbar({ onHelpClick }) {
           href="#products"
           className="py-2.5 text-sm font-medium text-berry transition-colors hover:text-berry-dark md:hidden"
         >
-          Our Products
+          Order Now
         </a>
 
         {/* Desktop */}
