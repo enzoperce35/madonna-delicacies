@@ -1,13 +1,16 @@
 import { forwardRef } from 'react'
 import { UtensilsCrossed } from 'lucide-react'
 import logo from '../assets/images/logo.png'
-import { peso } from '../utils/format'
+import { applyDiscount } from '../utils/discount'
+import { peso, peso2 } from '../utils/format'
+
 
 // fixedWidth = true is the off-screen copy that becomes the image
 const OrderSlipCard = forwardRef(function OrderSlipCard(
   { items, total, messengerName, fixedWidth = false },
   ref
 ) {
+  const { discount, final } = applyDiscount(total)
   return (
     <div
       ref={ref}
@@ -59,11 +62,25 @@ const OrderSlipCard = forwardRef(function OrderSlipCard(
             </li>
           ))}
         </ul>
-
+        
         {/* Total */}
         <div className="flex items-baseline justify-between border-t-2 border-gold/50 bg-cream/60 px-5 py-4">
           <span className="text-sm font-semibold uppercase tracking-wider text-cocoa">Total</span>
-          <span className="font-display text-4xl font-semibold text-berry">{peso(total)}</span>
+
+          {discount > 0 ? (
+            <span className="flex items-baseline gap-2.5">
+              <span className="font-price text-xl tabular-nums text-cocoa/45 line-through decoration-berry/50">
+                {peso(total)}
+              </span>
+              <span className="font-price text-4xl font-semibold tabular-nums text-berry">
+                {peso(final)}
+              </span>
+            </span>
+          ) : (
+            <span className="font-price text-4xl font-semibold tabular-nums text-berry">
+              {peso(total)}
+            </span>
+          )}
         </div>
       </div>
     </div>

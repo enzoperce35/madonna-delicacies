@@ -3,6 +3,7 @@ import { Check, Minus, Plus, ShoppingBag, Trash2, UtensilsCrossed, X } from 'luc
 import { useCart } from '../context/CartContext'
 import CheckoutFlow from './CheckoutFlow'
 import { peso } from '../utils/format'
+import PriceSummary from './PriceSummary'
 
 const detail = (size) =>
   size.pieces
@@ -169,12 +170,7 @@ export default function CartSheet() {
 
             {/* Footer */}
             <div className="border-t border-cream-dark bg-white px-5 py-4 sm:px-6 sm:py-5">
-              <div className="flex items-baseline justify-between">
-                <span className="text-sm text-cocoa/70">Total</span>
-                <span className="font-display text-3xl font-semibold text-berry">
-                  {peso(total)}
-                </span>
-              </div>
+              <PriceSummary subtotal={total} />
 
               <button
                 onClick={() => setCheckout(true)}

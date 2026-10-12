@@ -1,4 +1,5 @@
 import { products } from '../data/products'
+import { applyDiscount } from './discount'
 
 // How much each dish appeals to adults vs. kids (0 to 1). Tweak freely!
 const APPEAL = {
@@ -168,8 +169,8 @@ export function recommendByBudget(guests, kidsCount, budget) {
     }),
   })
 
-  // Keep only what fits the budget
-  const fits = candidates.filter((c) => c.total <= budget)
+  // The budget is what the customer actually pays, so compare against the discounted price
+  const fits = candidates.filter((c) => applyDiscount(c.total).final <= budget)
 
   // Budget too low: show the closest (cheapest) spread instead of nothing
   if (fits.length === 0) {
@@ -184,7 +185,7 @@ export function recommendByBudget(guests, kidsCount, budget) {
     c.meanFood * FOOD_SCORE_WEIGHT +
     c.groupCount * 0.8 +
     c.entries.length * 0.25 +
-    (c.total / budget) * 2 -
+    (applyDiscount(c.total).final / budget) * 2 -
     Math.abs(c.scale - 1) * 1.5
   })
 

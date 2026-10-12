@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Heart, Minus, Plus, Sparkles, X } from 'lucide-react'
 import CheckoutFlow from './CheckoutFlow'
 import { recommendByBudget } from '../utils/recommend'
+import PriceSummary from './PriceSummary'
 
 const peso = (amount) => `₱${amount.toLocaleString('en-PH')}`
 
@@ -365,12 +366,7 @@ export default function RecommendationModal({ open, onClose }) {
         {/* Sticky footer */}
         {active && (
           <div className="border-t border-cream-dark bg-white px-5 py-4 sm:px-6 sm:py-5">
-            <div className="flex items-baseline justify-between">
-              <span className="text-sm text-cocoa/70">Estimated total</span>
-              <span className="font-display text-3xl font-semibold text-berry">
-                {peso(active.total)}
-              </span>
-            </div>
+            <PriceSummary subtotal={active.total} label="Estimated total" showNudge={false} />
             <p className="mt-1 text-xs text-cocoa/50">
               A friendly estimate. We'll confirm the final order with you.
             </p>
