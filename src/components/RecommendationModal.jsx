@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Camera, Check, Heart, Minus, Plus, Sparkles, UtensilsCrossed, X } from 'lucide-react'
-import OrderButtons from './OrderButtons'
-import logo from '../assets/images/logo.png'
+import { Heart, Minus, Plus, Sparkles, X } from 'lucide-react'
+import CheckoutFlow from './CheckoutFlow'
 import { recommendByBudget } from '../utils/recommend'
 
 const peso = (amount) => `₱${amount.toLocaleString('en-PH')}`
@@ -112,21 +111,18 @@ export default function RecommendationModal({ open, onClose }) {
   const activeIndex = spreads ? Math.min(pick, spreads.length - 1) : 0
   const active = spreads ? spreads[activeIndex] : null
 
-  // "I love this set": grow the full-screen list out of the button
   const likeSet = (e) => {
     const rect = e.currentTarget.getBoundingClientRect()
     setOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
-    setPhase('slip')
+    setPhase('checkout')
   }
 
-  // "Get more": close the planner and jump to the products
-  const getMore = () => {
-    setPhase('plan')
-    onClose()
-    setTimeout(() => {
-      document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })
-    }, 150)
-  }
+    // "Cancel": close the planner and go back to the top of the homepage
+    const cancel = () => {
+      setPhase('plan')
+      onClose()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
 
   // "Send screenshot" opens Messenger, so just reset and close
   const finish = () => {
@@ -154,137 +150,26 @@ export default function RecommendationModal({ open, onClose }) {
 
   if (!open) return null
 
-  /* ---------- Full-screen views: Step 1 (the list), Step 2 (send it) ---------- */
-  if (phase !== 'plan' && active) {
-    return (
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Your chosen set"
-        className="fixed inset-0 z-50 animate-expand overflow-y-auto bg-cream"
-        style={{ transformOrigin: `${origin.x}px ${origin.y}px` }}
-      >
-        <div
-          key={phase}
-          className="mx-auto flex min-h-full w-full max-w-md animate-fade-up flex-col justify-center gap-5 px-5"
-          style={{
-            paddingTop: 'max(2rem, env(safe-area-inset-top))',
-            paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
-          }}
-        >
-          {phase === 'slip' ? (
-            <>
-              <p className="flex items-center justify-center gap-1.5 text-xs font-medium uppercase tracking-widest text-cocoa/50">
-                <Camera size={14} />
-                Step 1 of 2 · Take a screenshot
-              </p>
-
-              {/* The list */}
-              <div className="overflow-hidden rounded-3xl border border-cream-dark bg-white shadow-xl shadow-cocoa/10">
-                <div className="border-b border-cream-dark px-5 py-2">
-                  <img src={logo} alt="Madonna Delicacies" className="h-10 w-auto" />
-                </div>
-
-                <ul className="divide-y divide-cream-dark px-5">
-                  {active.items.map(({ product, combo, subtotal }) => (
-                    <li key={product.id} className="flex items-center gap-3 py-3">
-                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-mint-light">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-cocoa/30">
-                            <UtensilsCrossed size={20} strokeWidth={1.25} />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="font-display text-lg font-semibold leading-tight text-berry">
-                          {product.name}
-                        </p>
-                        {combo.map(({ size, qty }) => (
-                          <p key={size.name} className="text-xs text-cocoa/70">
-                            <span className="font-semibold text-cocoa">{qty}×</span> {size.name} ·{' '}
-                            {detail(size)}
-                          </p>
-                        ))}
-                      </div>
-
-                      <span className="shrink-0 whitespace-nowrap font-semibold text-cocoa">
-                        {peso(subtotal)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="flex items-baseline justify-between border-t-2 border-gold/50 bg-cream/60 px-5 py-4">
-                  <span className="text-sm font-semibold uppercase tracking-wider text-cocoa">
-                    Total
-                  </span>
-                  <span className="font-display text-4xl font-semibold text-berry">
-                    {peso(active.total)}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setPhase('next')}
-                className="inline-flex items-center gap-1.5 self-center rounded-full border border-cocoa/20 px-5 py-2.5 text-xs font-medium text-cocoa/60 transition-colors hover:border-berry hover:text-berry"
-              >
-                <Check size={14} />
-                Done
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="text-center">
-                <p className="text-xs font-medium uppercase tracking-widest text-gold-dark">
-                  Step 2 of 2
-                </p>
-                <h3 className="mt-2 text-4xl font-semibold text-berry">Great Choices!</h3>
-                <p className="mt-3 text-sm leading-relaxed text-cocoa/70">
-                  Your order isn't sent yet. Send your screenshot to us on Messenger and we'll
-                  confirm it with you.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <OrderButtons
-                  fullWidth
-                  size="lg"
-                  label="Send screenshot on Messenger"
-                  onClick={finish}
-                />
-                <button
-                  onClick={getMore}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
-                >
-                  <Plus size={17} />
-                  Get more
-                </button>
-              </div>
-
-              <p className="text-center text-xs leading-relaxed text-cocoa/55">
-                In Messenger, tap the photo icon and choose your screenshot. Please also tell us
-                your name, the date and time you need it, and pickup or delivery details.
-              </p>
-
-              <button
-                onClick={() => setPhase('slip')}
-                className="mx-auto text-sm text-cocoa/60 transition-colors hover:text-berry"
-              >
-                Show my list again
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    )
-  }
+    /* ---------- Checkout: review → name → sending → done ---------- */
+    if (phase === 'checkout' && active) {
+      const slipItems = active.items.map(({ product, combo, subtotal }) => ({
+        key: product.id,
+        name: product.name,
+        image: product.image,
+        lines: combo.map(({ size, qty }) => ({ qty, label: `${size.name} · ${detail(size)}` })),
+        subtotal,
+      }))
+  
+      return (
+        <CheckoutFlow
+          items={slipItems}
+          total={active.total}
+          origin={origin}
+          onCancel={cancel}
+          onClose={finish}
+        />
+      )
+    }
 
   /* ---------- The planner ---------- */
   return (
@@ -343,9 +228,8 @@ export default function RecommendationModal({ open, onClose }) {
               min={0}
               max={n}
               onChange={setKids}
-              unit={`${kidsCount === 1 ? 'kid' : 'kids'} · ${n - kidsCount} ${
-                n - kidsCount === 1 ? 'adult' : 'adults'
-              }`}
+              unit={`${kidsCount === 1 ? 'kid' : 'kids'} · ${n - kidsCount} ${n - kidsCount === 1 ? 'adult' : 'adults'
+                }`}
             />
 
             {/* Budget */}
@@ -417,11 +301,10 @@ export default function RecommendationModal({ open, onClose }) {
                       <button
                         key={spread.id}
                         onClick={() => setPick(i)}
-                        className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition-colors sm:px-4 sm:py-1.5 sm:text-sm ${
-                          i === activeIndex
+                        className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition-colors sm:px-4 sm:py-1.5 sm:text-sm ${i === activeIndex
                             ? 'border-berry bg-berry text-white'
                             : 'border-cream-dark bg-white text-cocoa/70 hover:border-berry hover:text-berry'
-                        }`}
+                          }`}
                       >
                         {spread.label}
                       </button>

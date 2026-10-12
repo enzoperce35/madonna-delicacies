@@ -13,6 +13,7 @@ export default function OrderButtons({
   fullWidth = false,
   label = 'Order on Messenger',
   onClick,
+  newTab = true,
   className = '',
 }) {
   const colors =
@@ -23,8 +24,7 @@ export default function OrderButtons({
   return (
     <a
       href={siteConfig.messengerUrl}
-      target="_blank"
-      rel="noopener noreferrer"
+      {...(newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       onClick={onClick}
       className={`inline-flex items-center justify-center gap-2.5 rounded-full font-medium shadow-lg transition-all duration-200 hover:-translate-y-0.5 ${colors} ${sizes[size]} ${
         fullWidth ? 'w-full' : ''

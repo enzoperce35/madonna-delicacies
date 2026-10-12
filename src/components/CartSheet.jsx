@@ -1,20 +1,8 @@
 import { useEffect, useState } from 'react'
-import {
-  ArrowLeft,
-  Camera,
-  Check,
-  Minus,
-  Plus,
-  ShoppingBag,
-  Trash2,
-  UtensilsCrossed,
-  X,
-} from 'lucide-react'
+import { Check, Minus, Plus, ShoppingBag, Trash2, UtensilsCrossed, X } from 'lucide-react'
 import { useCart } from '../context/CartContext'
-import OrderButtons from './OrderButtons'
-import logo from '../assets/images/logo.png'
-
-const peso = (amount) => `₱${amount.toLocaleString('en-PH')}`
+import CheckoutFlow from './CheckoutFlow'
+import { peso } from '../utils/format'
 
 const detail = (size) =>
   size.pieces
@@ -37,17 +25,12 @@ function Thumb({ image }) {
 
 export default function CartSheet() {
   const { isOpen, closeCart, items, count, total, setQty, clear } = useCart()
-  const [phase, setPhase] = useState('cart') // 'cart' → 'slip' (Step 1) → 'next' (Step 2)
+  const [checkout, setCheckout] = useState(false)
 
   // Start from the bag whenever it closes
   useEffect(() => {
-    if (!isOpen) setPhase('cart')
+    if (!isOpen) setCheckout(false)
   }, [isOpen])
-
-  // If the bag empties while reviewing, go back to it
-  useEffect(() => {
-    if (count === 0 && phase !== 'cart') setPhase('cart')
-  }, [count, phase])
 
   // Lock page scroll + close on Escape
   useEffect(() => {
@@ -64,128 +47,29 @@ export default function CartSheet() {
 
   if (!isOpen) return null
 
-  /* ---------- Full-screen: Step 1 (screenshot) and Step 2 (send) ---------- */
-  if (phase !== 'cart') {
+  const cancel = () => {
+    closeCart()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  /* ---------- Checkout: review → name → sending → done ---------- */
+  if (checkout) {
+    const slipItems = items.map(({ key, product, size, qty, lineTotal }) => ({
+      key,
+      name: product.name,
+      image: product.image,
+      lines: [{ qty, label: `${size.name} · ${detail(size)}` }],
+      subtotal: lineTotal,
+    }))
+
     return (
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Your order"
-        className="fixed inset-0 z-[60] animate-expand overflow-y-auto bg-cream"
-        style={{ transformOrigin: '100% 100%' }}
-      >
-        <div
-          key={phase}
-          className="mx-auto flex min-h-full w-full max-w-md animate-fade-up flex-col justify-center gap-5 px-5"
-          style={{
-            paddingTop: 'max(2rem, env(safe-area-inset-top))',
-            paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
-          }}
-        >
-          {phase === 'slip' ? (
-            <>
-              <p className="flex items-center justify-center gap-1.5 text-xs font-medium uppercase tracking-widest text-cocoa/50">
-                <Camera size={14} />
-                Step 1 of 2 · Take a screenshot
-              </p>
-
-              {/* The order list */}
-              <div className="overflow-hidden rounded-3xl border border-cream-dark bg-white shadow-xl shadow-cocoa/10">
-                <div className="border-b border-cream-dark px-5 py-2">
-                  <img src={logo} alt="Madonna Delicacies" className="h-10 w-auto" />
-                </div>
-
-                <ul className="divide-y divide-cream-dark px-5">
-                  {items.map(({ key, product, size, qty, lineTotal }) => (
-                    <li key={key} className="flex items-center gap-3 py-3">
-                      <Thumb image={product.image} />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-display text-lg font-semibold leading-tight text-berry">
-                          {product.name}
-                        </p>
-                        <p className="text-xs text-cocoa/70">
-                          <span className="font-semibold text-cocoa">{qty}×</span> {size.name} ·{' '}
-                          {detail(size)}
-                        </p>
-                      </div>
-                      <span className="shrink-0 whitespace-nowrap font-semibold text-cocoa">
-                        {peso(lineTotal)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="flex items-baseline justify-between border-t-2 border-gold/50 bg-cream/60 px-5 py-4">
-                  <span className="text-sm font-semibold uppercase tracking-wider text-cocoa">
-                    Total
-                  </span>
-                  <span className="font-display text-4xl font-semibold text-berry">
-                    {peso(total)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-center gap-3">
-                <button
-                  onClick={() => setPhase('next')}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-cocoa/20 px-5 py-2.5 text-xs font-medium text-cocoa/60 transition-colors hover:border-berry hover:text-berry"
-                >
-                  <Check size={14} />
-                  Done
-                </button>
-                <button
-                  onClick={() => setPhase('cart')}
-                  className="inline-flex items-center gap-1 text-xs text-cocoa/50 transition-colors hover:text-berry"
-                >
-                  <ArrowLeft size={12} />
-                  Edit my order
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-center">
-                <p className="text-xs font-medium uppercase tracking-widest text-gold-dark">
-                  Step 2 of 2
-                </p>
-                <h3 className="mt-2 text-4xl font-semibold text-berry">Great Choices!</h3>
-                <p className="mt-3 text-sm leading-relaxed text-cocoa/70">
-                  Your order isn't sent yet. Send your screenshot to us on Messenger and we'll
-                  confirm it with you.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <OrderButtons
-                  fullWidth
-                  size="lg"
-                  label="Send screenshot on Messenger"
-                  onClick={closeCart}
-                />
-                <button
-                  onClick={closeCart}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-berry px-5 py-3 text-sm font-medium text-berry transition-colors hover:bg-berry hover:text-white"
-                >
-                  <Plus size={17} />
-                  Get more
-                </button>
-              </div>
-
-              <p className="text-center text-xs leading-relaxed text-cocoa/55">
-                In Messenger, tap the photo icon and choose your screenshot. Please also tell us
-                your name, the date and time you need it, and pickup or delivery details.
-              </p>
-
-              <button
-                onClick={() => setPhase('slip')}
-                className="mx-auto text-sm text-cocoa/60 transition-colors hover:text-berry"
-              >
-                Show my order again
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+      <CheckoutFlow
+        items={slipItems}
+        total={total}
+        onCancel={cancel}
+        onSuccess={clear}
+        onClose={closeCart}
+      />
     )
   }
 
@@ -291,16 +175,13 @@ export default function CartSheet() {
                   {peso(total)}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-cocoa/50">
-                Next, you'll screenshot your order and send it to us on Messenger.
-              </p>
 
               <button
-                onClick={() => setPhase('slip')}
+                onClick={() => setCheckout(true)}
                 className="mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-berry px-8 py-3.5 text-base font-medium text-white shadow-lg shadow-berry/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-berry-dark sm:py-4"
               >
                 <Check size={20} />
-                Review my order
+                Continue
               </button>
 
               <button
