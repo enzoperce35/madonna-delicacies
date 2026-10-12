@@ -48,7 +48,7 @@ export default function CheckoutFlow({ items, total, origin, onCancel, onSuccess
           quality: 0.92,
           pixelRatio: 2,
           cacheBust: true,
-          backgroundColor: '#fff9f0',
+          backgroundColor: '#ffffff',
         })
         setImageUrl(imageRef.current)
       } catch (err) {
