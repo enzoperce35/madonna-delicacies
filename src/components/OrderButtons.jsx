@@ -11,7 +11,7 @@ export default function OrderButtons({
   variant = 'light', // 'light' for cream backgrounds, 'dark' for cocoa backgrounds
   size = 'md',
   fullWidth = false,
-  label = 'Order on Messenger',
+  label = 'Ask via Messenger',
   onClick,
   newTab = true,
   className = '',

@@ -48,7 +48,7 @@ export default function Navbar({ onHelpClick }) {
             className="inline-flex items-center gap-2 rounded-full bg-berry px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-berry/20 transition-colors hover:bg-berry-dark"
           >
             <MessageCircle size={16} />
-            Order on Messenger
+            Ask via Messenger
           </a>
         </div>
       </nav>
