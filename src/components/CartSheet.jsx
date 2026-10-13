@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Check, Minus, Plus, ShoppingBag, Trash2, UtensilsCrossed, X } from 'lucide-react'
+import { Check, Minus, Plus, ShoppingBag, Trash2, UtensilsCrossed, ArrowLeft } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import CheckoutFlow from './CheckoutFlow'
 import { peso } from '../utils/format'
@@ -51,6 +51,14 @@ export default function CartSheet() {
   const cancel = () => {
     closeCart()
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // "Browse our products": close the bag and scroll to the products
+  const browseProducts = () => {
+    closeCart()
+    setTimeout(() => {
+      document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })
+    }, 150)
   }
 
   /* ---------- Checkout: review → name → sending → done ---------- */
@@ -106,7 +114,7 @@ export default function CartSheet() {
             aria-label="Close"
             className="rounded-full p-2 text-cocoa/60 transition-colors hover:bg-cream-dark hover:text-cocoa"
           >
-            <X size={22} />
+            <ArrowLeft size={25} />
           </button>
         </div>
 
@@ -118,7 +126,7 @@ export default function CartSheet() {
             </p>
             <p className="mt-2 text-sm text-cocoa/65">Tap a size on any bilao to add it.</p>
             <button
-              onClick={closeCart}
+              onClick={browseProducts}
               className="mt-6 inline-flex items-center justify-center rounded-full bg-berry px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-berry-dark"
             >
               Browse our products
@@ -177,15 +185,15 @@ export default function CartSheet() {
                 className="mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-berry px-8 py-3.5 text-base font-medium text-white shadow-lg shadow-berry/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-berry-dark sm:py-4"
               >
                 <Check size={20} />
-                Continue
+                Start Order
               </button>
 
               <button
                 onClick={clear}
-                className="mx-auto mt-3 flex items-center gap-1.5 text-xs text-cocoa/50 transition-colors hover:text-berry"
+                className="mx-auto mt-5 flex items-center gap-1.5 text-xs text-cocoa/50 transition-colors hover:text-berry"
               >
                 <Trash2 size={12} />
-                Clear order
+                Clear
               </button>
             </div>
           </>
