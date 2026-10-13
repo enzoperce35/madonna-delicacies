@@ -22,6 +22,8 @@ const s = (name, price, pax, pieces = null) => ({
 
 // Lumpiang Shanghai: a standard gathering is 3-6 pcs per person
 const lumpiaPax = (pcs) => [Math.round(pcs / 6), Math.round(pcs / 4)]
+// Empanada: a standard gathering is 1-2 pcs per person
+const empanadaPax = (pcs) => [Math.round(pcs / 1.5), pcs]
 
 const baseProducts = [
   {
@@ -115,6 +117,18 @@ const baseProducts = [
       s('Medium', 500, lumpiaPax(72), 72),
       s('Large', 750, lumpiaPax(108), 108),
       s('XL', 1000, lumpiaPax(144), 144),
+    ],
+  },
+  {
+    id: 'empanada',
+    name: 'Empanada',
+    category: 'Pastry',
+    description: 'Golden, flaky pastry with a savory filling. Easy to pick up and share.',
+    image: null,
+    sizes: [
+      s('Small', 300, empanadaPax(15), 15),   // REPLACE: name, price, pieces
+      s('Medium', 500, empanadaPax(25),25),
+      s('Large', 780, empanadaPax(40), 40),
     ],
   },
 ]

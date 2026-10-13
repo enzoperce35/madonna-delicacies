@@ -22,7 +22,7 @@ export default function ProductsGrid({ onHelpClick }) {
       </div>
 
       {/* Grid */}
-      <div className="mt-10 grid gap-6 sm:mt-14 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
+      <div className="mt-10 grid gap-6 sm:mt-14 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3 lg:[&>*:last-child:nth-child(3n+1)]:col-start-2">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

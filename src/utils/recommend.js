@@ -12,6 +12,7 @@ const APPEAL = {
   'chicken-wings':     { adult: 0.8, kid: 0.8 },
   siomai:              { adult: 0.7, kid: 0.3 },
   'lumpiang-shanghai': { adult: 0.8, kid: 0.8 },
+  empanada:            { adult: 0.9, kid: 0.3 },
 }
 
 // YOUR food score (0 to 10). Higher = more likely to be recommended first.
@@ -25,6 +26,7 @@ const FOOD_SCORE = {
     'chicken-wings':     7,
     siomai:              5,
     'lumpiang-shanghai': 7,
+    empanada:            8,
   }
   
 // How strongly the food score affects ranking (3 = as strong as kid/adult appeal)
@@ -116,6 +118,7 @@ export function recommendByBudget(guests, kidsCount, budget) {
     chicken: inGroup(['Chicken']),
     kakanin: inGroup(['Kakanin']),
     snack: inGroup(['Dimsum', 'Lumpia']),
+    snack: inGroup(['Dimsum', 'Lumpia', 'Pastry']),
   }
 
   // Generate base combinations adhering to your specific guest rules
