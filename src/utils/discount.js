@@ -1,6 +1,6 @@
 // Progressive discount: none below ₱500, and bigger orders get a bigger percentage.
 
-export const MIN_DISCOUNT_ORDER = 500
+export const MIN_DISCOUNT_ORDER = 1600
 
 // [order total, discount percent]. The percent is blended smoothly between these points.
 export const DISCOUNT_POINTS = [
