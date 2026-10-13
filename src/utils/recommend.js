@@ -1,5 +1,6 @@
 import { products } from '../data/products'
 import { applyDiscount } from './discount'
+import { baseSizesFor } from './baseSizes'
 
 // How much each dish appeals to adults vs. kids (0 to 1). Tweak freely!
 const APPEAL = {
@@ -12,7 +13,7 @@ const APPEAL = {
   'chicken-wings':     { adult: 0.8, kid: 0.8 },
   siomai:              { adult: 0.7, kid: 0.3 },
   'lumpiang-shanghai': { adult: 0.8, kid: 0.8 },
-  empanada:            { adult: 0.9, kid: 0.3 },
+  empanada:            { adult: 0.8, kid: 0.3 },
 }
 
 // YOUR food score (0 to 10). Higher = more likely to be recommended first.
@@ -89,11 +90,12 @@ const combos = (list, size) => {
 }
 
 export function recommendByBudget(guests, kidsCount, budget) {
+  // Exact share of the crowd that is kids (0 to 1)
   const k = Math.min(1, Math.max(0, kidsCount / guests))
 
   const scored = products.map((product) => {
     const a = APPEAL[product.id]
-    const foodScore = (FOOD_SCORE[product.id] ?? 5) / 10
+    const foodScore = (FOOD_SCORE[product.id] ?? 5) / 10 // 0 to 1
 
     return {
       product,
@@ -113,79 +115,43 @@ export function recommendByBudget(guests, kidsCount, budget) {
   const inGroup = (categories) =>
     scored.filter((s) => categories.includes(s.product.category))
 
+  // Pasta & noodles, best-loved first
+  const baseDishes = inGroup(['Noodles', 'Pasta']).sort((a, b) => b.appeal - a.appeal)
+  if (baseDishes.length === 0) {
+    console.error(
+      'Help Me Choose: no products with category "Noodles" or "Pasta" were found. Check the categories in products.js.'
+    )
+  }
+
   const groups = {
-    base: inGroup(['Noodles', 'Pasta']),
     chicken: inGroup(['Chicken']),
     kakanin: inGroup(['Kakanin']),
-    snack: inGroup(['Dimsum', 'Lumpia']),
     snack: inGroup(['Dimsum', 'Lumpia', 'Pastry']),
   }
 
-  // Generate base combinations adhering to your specific guest rules
-  let baseOptions = []
-  
-  if (guests === 10 || guests === 12) {
-    // 1 medium pasta/noodles
-    baseOptions = groups.base.map(item => [{ item, sizeName: 'medium' }])
-  } else if ((guests >= 13 && guests <= 17 && guests !== 16) || guests === 20) {
-    // 1 large pasta/noodles (covers 13, 15, 17, and 20)
-    baseOptions = groups.base.map(item => [{ item, sizeName: 'large' }])
-  } else if (guests === 18) {
-    // 1 xl pasta/noodles
-    baseOptions = groups.base.map(item => [{ item, sizeName: 'xl' }])
-  } else if (guests === 25) {
-    // 1 medium pasta/noodles and 1 large pasta/noodles (must be different products)
-    for (let i = 0; i < groups.base.length; i++) {
-      for (let j = 0; j < groups.base.length; j++) {
-        if (i !== j) {
-          baseOptions.push([
-            { item: groups.base[i], sizeName: 'medium' },
-            { item: groups.base[j], sizeName: 'large' }
-          ])
-        }
-      }
-    }
-  } else if (guests === 30) {
-    // 1 large pasta/noodles and 1 large pasta/noodles (must be different products)
-    for (let i = 0; i < groups.base.length; i++) {
-      for (let j = 0; j < groups.base.length; j++) {
-        if (i !== j) {
-          baseOptions.push([
-            { item: groups.base[i], sizeName: 'large' },
-            { item: groups.base[j], sizeName: 'large' }
-          ])
-        }
-      }
-    }
-  } else {
-    // Fallback standard combinations for other guest counts
-    baseOptions = [0, 1, 2].flatMap((n) => combos(groups.base, n)).map(arr => arr.map(item => ({ item, sizeName: null })))
+  // 1. Pasta/noodles come first. Their sizes depend only on the headcount,
+  //    and each one is a different product.
+  const baseSizes = baseSizesFor(guests, baseDishes.length)
+  const baseOptions = combos(baseDishes, baseSizes.length)
+
+  const fixedItem = (entry, sizeName) => {
+    const size = entry.product.sizes.find((s) => s.name === sizeName) ?? entry.product.sizes.at(-1)
+    return { entry, combo: [{ size, qty: 1 }], cost: size.price }
   }
 
-  const chickenOptions = [0, 1, 2].flatMap((n) => combos(groups.chicken, n))
-  const kakaninOptions = [0, 1].flatMap((n) => combos(groups.kakanin, n))
-  const snackOptions = [0, 1, 2].flatMap((n) => combos(groups.snack, n))
+  // 2. Then the other dishes (every way to choose them)
+  const options = {
+    chicken: [0, 1, 2].flatMap((n) => combos(groups.chicken, n)),
+    kakanin: [0, 1].flatMap((n) => combos(groups.kakanin, n)),
+    snack: [0, 1, 2].flatMap((n) => combos(groups.snack, n)),
+  }
 
+  // Price of one of the other dishes at one portion level (cached)
   const cache = new Map()
-  const priceItem = (baseEntry, scale) => {
-    const { item, sizeName } = baseEntry
-    const key = `${item.product.id}@${sizeName || 'default'}@${scale}`
-    if (!cache.has(key)) {
-      if (sizeName) {
-        cache.set(key, getSpecificSizePrice(item.product, sizeName))
-      } else {
-        const share = (0.35 + 0.35 * item.appeal) * scale
-        const needed = Math.max(1, Math.ceil(guests * share))
-        cache.set(key, pickSizes(item.product.sizes, needed))
-      }
-    }
-    return cache.get(key)
-  }
-
-  // Regular price item helper for non-base categories
-  const priceStandardItem = (entry, scale) => {
+  const priceItem = (entry, scale) => {
     const key = `${entry.product.id}@${scale}`
     if (!cache.has(key)) {
+      // Guests share several dishes, so each dish feeds part of the crowd.
       const share = (0.35 + 0.35 * entry.appeal) * scale
       const needed = Math.max(1, Math.ceil(guests * share))
       cache.set(key, pickSizes(entry.product.sizes, needed))
@@ -194,32 +160,26 @@ export function recommendByBudget(guests, kidsCount, budget) {
   }
 
   const candidates = []
-  for (const base of baseOptions) {
-    for (const chicken of chickenOptions) {
-      for (const kakanin of kakaninOptions) {
-        for (const snack of snackOptions) {
-          const baseEntriesRaw = base.map(b => b.item)
-          const entries = [...baseEntriesRaw, ...chicken, ...kakanin, ...snack]
-          
-          if (entries.length < 2 || base.length + chicken.length === 0) continue
+  for (const baseEntries of baseOptions) {
+    // The biggest size goes to the best-loved dish
+    const fixed = baseEntries.map((entry, i) => fixedItem(entry, baseSizes[i]))
+    const fixedCost = fixed.reduce((sum, f) => sum + f.cost, 0)
 
-          const groupCount = [base, chicken, kakanin, snack].filter((g) => g.length).length
+    for (const chicken of options.chicken) {
+      for (const kakanin of options.kakanin) {
+        for (const snack of options.snack) {
+          const others = [...chicken, ...kakanin, ...snack]
+          const entries = [...baseEntries, ...others]
+
+          const groupCount = 1 + [chicken, kakanin, snack].filter((g) => g.length).length
           const meanAppeal = entries.reduce((sum, e) => sum + e.appeal, 0) / entries.length
           const meanFood = entries.reduce((sum, e) => sum + e.foodScore, 0) / entries.length
 
-          for (const scale of SCALES) {
-            let totalCost = 0
-            // Calculate base cost using specific sizing rules if applied
-            for (const b of base) {
-              totalCost += priceItem(b, scale).cost
-            }
-            // Calculate rest of the categories
-            const nonBaseEntries = [...chicken, ...kakanin, ...snack]
-            for (const nb of nonBaseEntries) {
-              totalCost += priceStandardItem(nb, scale).cost
-            }
-
-            candidates.push({ base, nonBase: nonBaseEntries, entries, scale, total: totalCost, groupCount, meanAppeal, meanFood })
+          // Portion levels only matter when there are other dishes to size
+          for (const scale of others.length ? SCALES : [1]) {
+            const total =
+              fixedCost + others.reduce((sum, e) => sum + priceItem(e, scale).cost, 0)
+            candidates.push({ entries, fixed, others, scale, total, groupCount, meanAppeal, meanFood })
           }
         }
       }
@@ -230,27 +190,32 @@ export function recommendByBudget(guests, kidsCount, budget) {
     id: `option-${index + 1}`,
     label: `Option ${index + 1}`,
     total: c.total,
-    portion:
-      c.scale < 0.8 ? 'Lighter portions' : c.scale >= 1.15 ? 'Generous portions' : 'Standard portions',
     items: [
-      ...c.base.map((b) => {
-        const { combo, cost } = priceItem(b, c.scale)
-        return { product: b.item.product, tag: b.item.tag, combo, subtotal: cost }
-      }),
-      ...c.nonBase.map((e) => {
-        const { combo, cost } = priceStandardItem(e, c.scale)
+      // Pasta/noodles first...
+      ...c.fixed.map(({ entry, combo, cost }) => ({
+        product: entry.product,
+        tag: entry.tag,
+        combo,
+        subtotal: cost,
+      })),
+      // ...then everything else
+      ...c.others.map((e) => {
+        const { combo, cost } = priceItem(e, c.scale)
         return { product: e.product, tag: e.tag, combo, subtotal: cost }
-      })
+      }),
     ],
   })
 
+  // The budget is what the customer actually pays, so compare against the discounted price
   const fits = candidates.filter((c) => applyDiscount(c.total).final <= budget)
 
+  // Budget too low: show the closest (cheapest) spread instead of nothing
   if (fits.length === 0) {
     const cheapest = candidates.reduce((min, c) => (c.total < min.total ? c : min))
     return { spreads: [toSpread(cheapest, 0)], tooLow: true }
   }
 
+  // Score what fits: loved dishes, variety, and making good use of the budget
   fits.forEach((c) => {
     c.score =
       c.meanAppeal * 3 +
@@ -261,6 +226,7 @@ export function recommendByBudget(guests, kidsCount, budget) {
       Math.abs(c.scale - 1) * 1.5
   })
 
+  // Keep the best portion level for each distinct set of dishes
   const bestBySet = new Map()
   fits.forEach((c) => {
     const key = c.entries.map((e) => e.product.id).sort().join('|')
@@ -269,6 +235,7 @@ export function recommendByBudget(guests, kidsCount, budget) {
   })
   const ranked = [...bestBySet.values()].sort((a, b) => b.score - a.score)
 
+  // Pick the top options that are meaningfully different from each other
   const difference = (a, b) => {
     let d = 0
     a.forEach((id) => !b.has(id) && d++)
